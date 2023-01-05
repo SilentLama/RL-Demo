@@ -33,7 +33,7 @@ class TableVisualizer(GameObject):
         self.rows, self.cols = self.data_function().shape
         self.cell_size = min(self.width // self.cols, self.height //  self.rows)
 
-    def update(self):
+    def update(self, events):
         # No updates needed for the table visualizer
         pass
 

@@ -29,7 +29,7 @@ class FPSDisplay(GameObject):
         self.fps = 0
         
     
-    def update(self):
+    def update(self, events):
         """Update the FPS display with the current FPS of the window.
         """
         self.fps = self.window.fps

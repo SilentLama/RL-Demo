@@ -30,7 +30,7 @@ class MazePolicyVisualizer(GameObject):
         self.rows, self.cols = self.policy_function().shape
         self.cell_size = min(self.width // self.cols, self.height // self.rows)
 
-    def update(self):
+    def update(self, events):
         pass
 
     def draw(self, screen):

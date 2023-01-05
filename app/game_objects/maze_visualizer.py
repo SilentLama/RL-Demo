@@ -40,7 +40,7 @@ class MazeVisualizer(GameObject):
     def set_player_coords(self, coordinates):
         self.player_coords = coordinates
 
-    def update(self):
+    def update(self, events):
         # Check if the mouse button is released
         mouse_up = pygame.mouse.get_pressed()[0] == 0
         if self.mouse_down and mouse_up:

@@ -40,7 +40,7 @@ class VariableDisplay(GameObject):
         self.font_size = font_size
         
 
-    def update(self):
+    def update(self, events):
         pass
 
     def draw(self, screen):

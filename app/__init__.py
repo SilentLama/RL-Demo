@@ -29,7 +29,8 @@ class Window:
     def run(self):
         running = True
         while running:
-            for event in pygame.event.get():
+            events = pygame.event.get()
+            for event in events:
                 # print(event)
                 if event.type == pygame.QUIT:
                     running = False
@@ -39,7 +40,7 @@ class Window:
             self.screen.fill((0, 0, 0))  # Clear the screen
 
             for game_object in self.game_objects:
-                game_object.update()  # Update the game object
+                game_object.update(events)  # Update the game object
                 game_object.draw(self.screen)  # Draw the game object to the screen
             self.clock.tick(self._max_fps)
             pygame.display.flip()  # Update the display

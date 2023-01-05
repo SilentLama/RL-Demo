@@ -32,7 +32,7 @@ class Button(GameObject):
         self.image = self.font.render(self.text, True, self.font_color)
         self.clicked = False
 
-    def update(self):
+    def update(self, events):
         # Check for mouse clicks on the button
         mouse_pos = pygame.mouse.get_pos()
         if self.x < mouse_pos[0] < self.x + self.width and self.y < mouse_pos[1] < self.y + self.height:

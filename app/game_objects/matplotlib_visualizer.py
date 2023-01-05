@@ -40,7 +40,7 @@ class MatplotlibPlotDisplay(GameObject):
             self.image = pygame.image.fromstring(self.image, self.image_size, "RGB")
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
-    def update(self):
+    def update(self, events):
         """Update the matplotlib plot display with the latest data from the figure.
 
         :param pygame.display window: The window to update the plot display for.

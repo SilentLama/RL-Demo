@@ -35,7 +35,7 @@ class TextInput(GameObject):
         self.on_enter = on_enter
         self.last_text = ''
 
-    def update(self):
+    def update(self, events):
         # Update the cursor time
         self.cursor_time += 1
         if self.cursor_time >= 30:
@@ -50,7 +50,7 @@ class TextInput(GameObject):
                 self.active = False
         # Process keyboard events
         if self.active:
-            for event in pygame.event.get():
+            for event in events:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
                         self.text = self.text[:-1]

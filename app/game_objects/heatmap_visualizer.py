@@ -36,7 +36,7 @@ class HeatMapVisualizer(GameObject):
         self.cell_height = self.cell_size
         self.recompute_min_max(data)
 
-    def update(self):
+    def update(self, events):
         # No updates needed for the table visualizer
         pass
 
