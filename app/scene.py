@@ -66,8 +66,13 @@ class DynaQMazeScene(Scene):
         # self.reward_per_episode_line.axes.set_xlim(0, 0)
         # self.reward_per_episode_line.axes.set_ylim(0, 0)
 
+    def update_policy_state_function(self, state):
+        """Don't count the steps etc"""
+        self.state = state
+        self.maze_visualizer.player_coords = state
+
     def execute_policy_button_function(self):
-        thread = Thread(target=self.agent.execute_policy, args = [self.maze_model, self.state, self.pause / 1000, self.update_state_function])
+        thread = Thread(target=self.agent.execute_policy, args = [self.maze_model, self.state, self.pause / 1000, self.update_policy_state_function, self.max_steps_per_episode])
         thread.daemon = True
         thread.start()
 
@@ -124,7 +129,7 @@ class DynaQMazeScene(Scene):
         self.reward_per_episode_line.axes.set_ylim(min(self.episode_rewards) - 1, max(self.episode_rewards) + 1)
 
 
-    def __init__(self, width, height, title, max_fps = 60):
+    def __init__(self, width, height, title, maze_data, max_fps = 60):
         self.episode_reward = 0
         self.episode_rewards = []
         self.episode_step = 0
@@ -193,7 +198,7 @@ class DynaQMazeScene(Scene):
 
         item_width = self.window.width // 2
         item_height = (self.window.height - (self.BUTTON_HEIGHT + self.PADDING) * 2) // 2
-        self.maze = Maze.load_from_numpy_array("./mazes/first_example_maze.npy")
+        self.maze = Maze.load_from_numpy_array(maze_data)
         self.maze_model = MazeModel(self.maze, self.learning_rate, self.discount_factor, start_state = self.state)
         self.agent = DynaQAgent(self.maze_model)
 

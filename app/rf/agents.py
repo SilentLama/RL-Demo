@@ -49,12 +49,14 @@ class DynaQAgent:
         return self.train_steps(max_steps, algorithm, model, state, planning_steps, epsilon = epsilon, 
                                 pause = pause, update_state = update_state)
 
-    def execute_policy(self, model, start_state, pause, update_state):
+    def execute_policy(self, model, start_state, pause, update_state, max_steps):
         """Execute a run following just the trained policy"""
         state = start_state
-        while not model.is_terminal_state(state):
+        steps = 0
+        while not model.is_terminal_state(state) or steps < max_steps:
             action = model.get_greedy_action(state)
             _, state = model.execute_action(state, action)
             update_state(state)
+            steps += 1
             sleep(pause)
         return state
