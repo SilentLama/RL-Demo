@@ -102,7 +102,7 @@ class DynaQMazeScene(Scene):
         self.reward_per_episode_line.set_xdata(X)
         self.reward_per_episode_line.set_ydata(self.episode_rewards)
         self.reward_per_episode_line.axes.set_xlim(0, self.episode)
-        self.reward_per_episode_line.axes.set_ylim(min(self.episode_rewards), max(self.episode_rewards))
+        self.reward_per_episode_line.axes.set_ylim(min(self.episode_rewards) - 1, max(self.episode_rewards) + 1)
 
 
     def __init__(self, width, height, title, max_fps = 60):
@@ -118,7 +118,7 @@ class DynaQMazeScene(Scene):
         self.discount_factor = 0.9
         self.start_state = (2, 0)
         self.state = self.start_state
-        self.planning_steps = 0
+        self.planning_steps = 50
         self.max_steps_per_episode = 100
         self.pause = 50 # ms
         self.window = Window(width, height, title, max_fps)
