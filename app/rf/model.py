@@ -10,6 +10,7 @@ class MazeModel:
         self._start_state = start_state
         self._rows, self._cols = maze.shape
         self._q_table = np.repeat(np.full((4,), 0.0), self._rows * self._cols).reshape((self._rows, self._cols, 4)) # init all actions with 0
+        self._visited_states = np.full(self._maze.shape, False)
         self.action_map = ((-1, 0), (0, 1), (1, 0), (0, -1)) # ("up", "right", "down", "left")
 
     @property
@@ -26,10 +27,11 @@ class MazeModel:
 
     @property
     def visited_states(self):
-        return self._q_table.sum(axis = 2) != 0
+        return self._visited_states
 
     def reset(self):
-        self._q_table = np.repeat(np.full((4,), 0.0), self._rows * self._cols).reshape((self._rows, self._cols, 4)) # init all actions with 0
+        self._q_table [:] = 0
+        self._visited_states[:] = False
 
     def get_blank_policy(self):
         """Return a blank policy with dimensions (maze_rows, maze_cols)
@@ -78,13 +80,15 @@ class MazeModel:
     def is_terminal_state(self, state):
         return state in self._maze.goal_states
 
-    def execute_action(self, state, action):
+    def execute_action(self, state, action, sample = False):
         """Execute an action in the maze and return the reward and next state as a tuple
         
         If an action leads to an invalid state, next_state will be the current state
         """
         # state: (x, y)
         #action: ("up", "right", "down", "left") = (0, 1, 2, 3)
+        if not sample:
+            self._visited_states[state] = True
         s_x, s_y = state
         a_x, a_y = self.action_map[action]
         next_state = max(0, min(s_x + a_x, self._rows - 1)), max(0, min(s_y + a_y, self._cols - 1))
@@ -105,7 +109,7 @@ class MazeModel:
         state = self.get_random_visited_state()
         action = self.get_random_action()
 
-        reward, next_state = self.execute_action(state, action)
+        reward, next_state = self.execute_action(state, action, sample = True)
         reward = self._maze.rewards[next_state]
 
         return state, action, reward, next_state

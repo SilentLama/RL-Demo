@@ -72,7 +72,7 @@ class DynaQMazeScene(Scene):
         self.maze_visualizer.player_coords = state
 
     def execute_policy_thread_function(self):
-        self.agent.execute_policy(self.maze_model, self.state, self.pause / 1000, self.update_policy_state_function, self.max_steps_per_episode)
+        self.agent.execute_policy(self.maze_model, self.state, self.pause / 1000, self.update_policy_state_function, 50)
         self.state = self.start_state
         self.maze_visualizer.player_coords = self.state
 
@@ -139,11 +139,11 @@ class DynaQMazeScene(Scene):
         self.step = 0
         self.learning_rate = 0.1
         self.epsilon = 0.9
-        self.discount_factor = 0.9
+        self.discount_factor = 0.95
         self.start_state = (2, 0)
         self.state = self.start_state
         self.planning_steps = 0
-        self.max_steps_per_episode = 100
+        self.max_steps_per_episode = 1000
         self.pause = 0 # ms
         self.window = Window(width, height, title, max_fps)
         # BUTTON BAR
