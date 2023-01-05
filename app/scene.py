@@ -55,7 +55,16 @@ class DynaQMazeScene(Scene):
         self.episode_reward = 0
         self.episode_rewards.clear()
         self.steps_per_episode.clear()
-
+        # reset plots
+        self.steps_per_episode_line.set_xdata([])
+        self.steps_per_episode_line.set_ydata([])
+        # self.steps_per_episode_line.axes.set_xlim(0, 0)
+        # self.steps_per_episode_line.axes.set_ylim(0, 0)
+        
+        self.reward_per_episode_line.set_xdata([])
+        self.reward_per_episode_line.set_ydata([])
+        # self.reward_per_episode_line.axes.set_xlim(0, 0)
+        # self.reward_per_episode_line.axes.set_ylim(0, 0)
 
     def execute_policy_button_function(self):
         thread = Thread(target=self.agent.execute_policy, args = [self.maze_model, self.state, self.pause / 1000, self.update_state_function])
