@@ -71,10 +71,10 @@ class DynaQMazeScene(Scene):
         self.state = state
         self.maze_visualizer.player_coords = state
 
-    def execute_policy_button_function(self):
-        thread = Thread(target=self.agent.execute_policy, args = [self.maze_model, self.state, self.pause / 1000, self.update_policy_state_function, self.max_steps_per_episode])
-        thread.daemon = True
-        thread.start()
+    def execute_policy_thread_function(self):
+        self.agent.execute_policy(self.maze_model, self.state, self.pause / 1000, self.update_policy_state_function, self.max_steps_per_episode)
+        self.state = self.start_state
+        self.maze_visualizer.player_coords = self.state
 
     def pause_slider_function(self, pause_value):
         self.pause = round(pause_value)
@@ -266,6 +266,10 @@ class DynaQMazeScene(Scene):
         # train n steps
         thread = Thread(target=self.train_steps_agent_thread_function, args = [n])
         thread.daemon = True
+        thread.start()
+
+    def execute_policy_button_function(self):
+        thread = Thread(target=self.execute_policy_thread_function, daemon = True)
         thread.start()
 
     def init_mpl_plots(self):
