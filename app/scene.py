@@ -60,7 +60,10 @@ class DynaQMazeScene(Scene):
         thread.start()
 
     def pause_slider_function(self, pause_value):
-        self.pause = pause_value
+        self.pause = round(pause_value)
+
+    def planning_steps_slider_function(self, planning_steps):
+        self.planning_steps = round(planning_steps)
 
     def update_state_function(self, state):
         self.step += 1
@@ -122,9 +125,9 @@ class DynaQMazeScene(Scene):
         self.discount_factor = 0.9
         self.start_state = (2, 0)
         self.state = self.start_state
-        self.planning_steps = 50
+        self.planning_steps = 0
         self.max_steps_per_episode = 100
-        self.pause = 50 # ms
+        self.pause = 0 # ms
         self.window = Window(width, height, title, max_fps)
         # BUTTON BAR
         self.episode_display = VariableDisplay(0, 0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Episode", 
@@ -155,10 +158,13 @@ class DynaQMazeScene(Scene):
                                                 self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Discount factor", lambda: self.discount_factor, 
                                                 **self.BUTTON_KWARGS)
         self.pause_display = VariableDisplay(self.discount_factor_display.x + self.discount_factor_display.width + self.PADDING, self.discount_factor_display.y, 
-                                                self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Pause [ms]", lambda: round(self.pause), 
+                                                self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Pause [ms]", lambda: self.pause, 
                                                 **self.BUTTON_KWARGS)
-        self.policy_overlay_button = Button(self.pause_display.x + self.pause_display.width  + self.PADDING,
-                                        self.pause_display.y, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Enable P-Overlay", 
+        self.plan_steps_display = VariableDisplay(self.pause_display.x + self.pause_display.width + self.PADDING, self.pause_display.y, 
+                                                self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Plan steps", lambda: self.planning_steps, 
+                                                **self.BUTTON_KWARGS)
+        self.policy_overlay_button = Button(self.plan_steps_display.x + self.plan_steps_display.width  + self.PADDING,
+                                        self.plan_steps_display.y, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Enable P-Overlay", 
                                         self.policy_overlay_button_function, **self.BUTTON_KWARGS)
         self.heatmap_overlay_button = Button(self.policy_overlay_button.x + self.policy_overlay_button.width  + self.PADDING,
                                         self.policy_overlay_button.y, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Enable Heatmap", 
@@ -193,15 +199,18 @@ class DynaQMazeScene(Scene):
         
         
         self.steps_per_episode_figure, self.reward_per_episode_figure = self.init_mpl_plots()
-
+        plot_width_offset = 150
         self.steps_per_episode_plot = MatplotlibPlotDisplay(self.maze_visualizer.x + self.maze.walls.shape[1] * self.maze_visualizer.cell_size + self.PADDING, 
-                                                            self.maze_visualizer.y, self.steps_per_episode_figure, item_width, item_height)
+                                                            self.maze_visualizer.y, self.steps_per_episode_figure, item_width - plot_width_offset, item_height)
         self.reward_per_episode_plot = MatplotlibPlotDisplay(self.steps_per_episode_plot.x, self.steps_per_episode_plot.y + self.steps_per_episode_plot.height, 
-                                                            self.reward_per_episode_figure, item_width, item_height)
+                                                            self.reward_per_episode_figure, item_width - plot_width_offset, item_height)
 
-        slider_width = 25
-        self.pause_length_slider = Slider(self.steps_per_episode_plot.x + self.steps_per_episode_plot.width + (self.window.width - self.steps_per_episode_plot.x - self.steps_per_episode_plot.width) // 2 - slider_width // 2,
+        slider_width = 150
+        self.pause_length_slider = Slider(self.steps_per_episode_plot.x + self.steps_per_episode_plot.width + (self.window.width - self.steps_per_episode_plot.x - self.steps_per_episode_plot.width) // 3 - slider_width // 2,
                                         self.maze_visualizer.y, slider_width, item_height * 2 - 50, "Pause [ms]", 0, 250, 10, 20, self.pause_slider_function,
+                                        handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128))
+        self.plan_steps_slider = Slider(self.pause_length_slider.x + self.pause_length_slider.width + self.PADDING,
+                                        self.pause_length_slider.y, slider_width, item_height * 2 - 50, "Plan steps", 0, 100, 10, 20, self.planning_steps_slider_function,
                                         handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128))
 
 
@@ -209,11 +218,12 @@ class DynaQMazeScene(Scene):
 
         for object_ in (self.episode_display, self.one_episode_button, self.ten_episode_button, self.hundred_episode_button,
                         self.step_display, self.one_step_button, self.ten_step_button, self.hundred_step_button, 
-                        self.learning_rate_display, self.epsilon_display, self.discount_factor_display, self.pause_display, 
+                        self.learning_rate_display, self.epsilon_display, self.discount_factor_display, self.pause_display, self.plan_steps_display,
                         self.policy_overlay_button, self.heatmap_overlay_button, self.execute_policy_button, self.reset_button,
                          
 
                         self.maze_visualizer, self.table, self.steps_per_episode_plot, self.reward_per_episode_plot, self.pause_length_slider,
+                        self.plan_steps_slider,
 
                         fps_display):
             self.window.add_game_object(object_)
