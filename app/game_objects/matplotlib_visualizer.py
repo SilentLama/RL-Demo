@@ -5,6 +5,12 @@ import pygame
 from .game_object import GameObject
 from ..enums import RenderLayer
 
+import matplotlib
+def change_backend(backend = "agg"):
+    matplotlib.use(backend)
+
+change_backend()
+
 class MatplotlibPlotDisplay(GameObject):
     def __init__(self, x, y, figure, width, height, layer=RenderLayer.GAME):
         """A matplotlib plot display that can be rendered on the screen.
