@@ -23,12 +23,7 @@ class Scene(ABC):
         pass
 
 class DynaQMazeScene(Scene):
-    PADDING = 10 # px
-    BUTTON_WIDTH = 200
-    BUTTON_HEIGHT = 50
-    BUTTON_KWARGS = {
-        "background_color": (255, 128, 128)
-    }
+    
 
     def policy_overlay_button_function(self):
         if self.is_in_render_pipeline(self.policy_visualizer):
@@ -89,6 +84,10 @@ class DynaQMazeScene(Scene):
 
 
     def __init__(self, width, height, title, maze_data, max_fps = 60):
+        self.window = Window(width, height, title, max_fps)
+        self.window.add_size_change_callback(self.create_widgets)
+        self.maze_data = maze_data
+
         self.learning_rate = 0.1
         self.epsilon = 0.9
         self.discount_factor = 0.95
@@ -96,10 +95,24 @@ class DynaQMazeScene(Scene):
         self.planning_steps = 0
         self.max_steps_per_episode = 1000
         self.pause = 0 # ms
-        self.window = Window(width, height, title, max_fps)
+        self.create_widgets()
+
+
+    def create_widgets(self):
+        self.clear_render_pipeline()
+        width_ratio = (self.window.width / 1920)
+        self.PADDING = int(10 * width_ratio) # px
+        self.BUTTON_WIDTH = self.window.width / 9 - self.PADDING
+        self.BUTTON_HEIGHT = int(50 * width_ratio)
+        self.FONT_SIZE = int(32 * width_ratio)
+        self.BUTTON_KWARGS = {
+            "background_color": (255, 128, 128),
+            "font_size": self.FONT_SIZE,
+        }
+
         # BUTTON BAR
         self.episode_display = VariableDisplay(0, 0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Episode", 
-                                            lambda: self.agent.episode, background_color=(255, 128, 128))
+                                            lambda: self.agent.episode, **self.BUTTON_KWARGS)
         self.one_episode_button = Button(self.episode_display.x + self.episode_display.width  + self.PADDING,
                                         0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "1", lambda: self.train_episode(1), **self.BUTTON_KWARGS)
         self.ten_episode_button = Button(self.one_episode_button.x + self.one_episode_button.width  + self.PADDING,
@@ -109,7 +122,7 @@ class DynaQMazeScene(Scene):
 
         self.step_display = VariableDisplay(self.hundred_episode_button.x + self.hundred_episode_button.width + self.PADDING, 
                                             0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Step", 
-                                            lambda: self.agent.step, background_color=(255, 128, 128))
+                                            lambda: self.agent.step, **self.BUTTON_KWARGS)
         self.one_step_button = Button(self.step_display.x + self.step_display.width  + self.PADDING,
                                         0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "1", lambda: self.train_step(1), **self.BUTTON_KWARGS)
         self.ten_step_button = Button(self.one_step_button.x + self.one_step_button.width  + self.PADDING,
@@ -149,7 +162,7 @@ class DynaQMazeScene(Scene):
 
         item_width = self.window.width // 2
         item_height = (self.window.height - (self.BUTTON_HEIGHT + self.PADDING) * 2) // 2
-        self.maze = Maze.load_from_numpy_array(maze_data)
+        self.maze = Maze.load_from_numpy_array(self.maze_data)
         self.maze_model = MazeModel(self.maze, start_state = self.start_state)
         self.agent = DynaQAgent(self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
         self.agent_visualizer = AgentVisualizer(self.agent)
@@ -161,7 +174,7 @@ class DynaQMazeScene(Scene):
                                             self.maze_visualizer.width, self.maze_visualizer.height, cell_color=None, 
                                             policy_mask_function = lambda: self.agent.state_reward_table != 0)
         self.table = TableVisualizer(self.maze_visualizer.x, self.maze_visualizer.y + self.maze_visualizer.height, item_width, item_height, 
-                                    lambda: self.agent.state_reward_table, grid_color=(0, 0, 0))
+                                    lambda: self.agent.state_reward_table, grid_color=(0, 0, 0), font_size=self.FONT_SIZE)
         self.heatmap = HeatMapVisualizer(self.table.x, self.table.y, lambda: self.agent.state_reward_table, self.table.width, self.table.height)
 
         
@@ -169,22 +182,24 @@ class DynaQMazeScene(Scene):
         
         
         self.steps_per_episode_figure, self.reward_per_episode_figure = self.init_mpl_plots()
-        plot_width_offset = 150
+        plot_width_offset = 150 * (width_ratio)
         self.steps_per_episode_plot = MatplotlibPlotDisplay(self.maze_visualizer.x + self.maze.walls.shape[1] * self.maze_visualizer.cell_size + self.PADDING, 
                                                             self.maze_visualizer.y, self.steps_per_episode_figure, item_width - plot_width_offset, item_height)
         self.reward_per_episode_plot = MatplotlibPlotDisplay(self.steps_per_episode_plot.x, self.steps_per_episode_plot.y + self.steps_per_episode_plot.height, 
                                                             self.reward_per_episode_figure, item_width - plot_width_offset, item_height)
 
-        slider_width = 150
+        slider_width = (self.window.width - (self.steps_per_episode_plot.x + self.steps_per_episode_plot.width)) / 2 - self.PADDING * 2#150 * (width_ratio)
+        handle_radius = int(20 * width_ratio)
+        bar_width = int(10 * width_ratio)
         self.pause_length_slider = Slider(self.steps_per_episode_plot.x + self.steps_per_episode_plot.width + (self.window.width - self.steps_per_episode_plot.x - self.steps_per_episode_plot.width) // 3 - slider_width // 2,
-                                        self.maze_visualizer.y, slider_width, item_height * 2 - 50, "Pause [ms]", 0, 250, 10, 20, self.pause_slider_function,
-                                        handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128))
+                                        self.maze_visualizer.y, slider_width, item_height * 2 - 50, "Pause [ms]", 0, 250, bar_width, handle_radius, self.pause_slider_function,
+                                        handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
         self.plan_steps_slider = Slider(self.pause_length_slider.x + self.pause_length_slider.width + self.PADDING,
-                                        self.pause_length_slider.y, slider_width, item_height * 2 - 50, "Plan steps", 0, 100, 10, 20, self.planning_steps_slider_function,
-                                        handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128))
+                                        self.pause_length_slider.y, slider_width, item_height * 2 - 50, "Plan steps", 0, 100, bar_width, handle_radius, self.planning_steps_slider_function,
+                                        handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
 
 
-        fps_display = FPSDisplay(self.window.width - self.BUTTON_WIDTH, 0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, self.window)
+        fps_display = FPSDisplay(self.window.width - self.BUTTON_WIDTH, 0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, self.window, font_size=self.FONT_SIZE)
 
         for object_ in (self.episode_display, self.one_episode_button, self.ten_episode_button, self.hundred_episode_button,
                         self.step_display, self.one_step_button, self.ten_step_button, self.hundred_step_button, 
@@ -197,6 +212,9 @@ class DynaQMazeScene(Scene):
 
                         fps_display):
             self.window.add_game_object(object_)
+
+    def clear_render_pipeline(self):
+        self.window.game_objects.clear()
 
     def remove_from_render_pipeline(self, object_):
         if self.is_in_render_pipeline(object_):

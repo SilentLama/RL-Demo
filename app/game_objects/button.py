@@ -5,7 +5,7 @@ from .game_object import GameObject
 import pygame
 
 class Button(GameObject):
-    def __init__(self, x, y, width, height, text, callback, background_color=(0, 0, 0), font_color=(255, 255, 255), **kwargs):
+    def __init__(self, x, y, width, height, text, callback, background_color=(0, 0, 0), font_color=(255, 255, 255), font_size = 32, **kwargs):
         """A button that can be clicked to trigger a callback function.
 
         The button is rendered using the `x` and `y` coordinates inherited from the `GameObject` base class, and the `width` and `height` properties specific to the `Button` class. The callback function is triggered when the button is clicked and released. The button can also display text and can be customized with a background color and a font color.
@@ -28,7 +28,7 @@ class Button(GameObject):
         self.callback = callback
         self.background_color = background_color
         self.font_color = font_color
-        self.font = pygame.font.Font(None, 32)
+        self.font = pygame.font.Font(None, font_size)
         self.image = self.font.render(self.text, True, self.font_color)
         self.clicked = False
 

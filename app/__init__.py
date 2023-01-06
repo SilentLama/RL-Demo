@@ -11,6 +11,7 @@ class Window:
         self.title = title
         self._max_fps = max_fps
         self.game_objects = []
+        self.size_change_callbacks = []
 
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
         pygame.display.set_caption(self.title)
@@ -25,6 +26,10 @@ class Window:
     @property
     def fps(self):
         return self.clock.get_fps()
+
+    def add_size_change_callback(self, callback):
+        if callback not in self.size_change_callbacks:
+            self.size_change_callbacks.append(callback)
 
     def run(self):
         running = True
@@ -51,5 +56,7 @@ class Window:
         self.width = width
         self.height = height
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+        for callback in self.size_change_callbacks:
+            callback()
 
 
