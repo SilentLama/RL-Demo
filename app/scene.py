@@ -36,9 +36,11 @@ class DynaQMazeScene(Scene):
     def heatmap_overlay_button_function(self):
         if self.is_in_render_pipeline(self.heatmap):
             self.remove_from_render_pipeline(self.heatmap)
+            self.add_to_render_pipeline(self.table)
             self.policy_overlay_button.text = "Enable Heatmap"
         else:
             self.add_to_render_pipeline(self.heatmap)
+            self.remove_from_render_pipeline(self.table)
             self.policy_overlay_button.text = "Disable Heatmap"
 
     def reset_button_function(self):
