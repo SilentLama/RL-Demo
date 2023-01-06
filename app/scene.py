@@ -48,8 +48,6 @@ class DynaQMazeScene(Scene):
 
     def execute_policy_thread_function(self):
         self.agent.execute_policy(self.maze_model, 50)
-        self.state = self.start_state
-        self.maze_visualizer.player_coords = self.state
 
     def pause_slider_function(self, pause_value):
         pause_value = round(pause_value) / 1000
@@ -83,18 +81,23 @@ class DynaQMazeScene(Scene):
         self.reward_per_episode_plot.update_next_frame()
 
 
-    def __init__(self, width, height, title, maze_data, max_fps = 60):
+    def __init__(self, width, height, title, maze, max_fps = 60):
         self.window = Window(width, height, title, max_fps)
         self.window.add_size_change_callback(self.create_widgets)
-        self.maze_data = maze_data
 
         self.learning_rate = 0.1
         self.epsilon = 0.9
         self.discount_factor = 0.95
         self.start_state = (2, 0)
         self.planning_steps = 0
-        self.max_steps_per_episode = 1000
+        self.max_steps_per_episode = 10000
         self.pause = 0 # ms
+
+        self.maze = maze
+        self.maze_model = MazeModel(self.maze)
+        self.agent = DynaQAgent(self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
+        self.agent_visualizer = AgentVisualizer(self.agent)
+
         self.create_widgets()
 
 
@@ -162,13 +165,10 @@ class DynaQMazeScene(Scene):
 
         item_width = self.window.width // 2
         item_height = (self.window.height - (self.BUTTON_HEIGHT + self.PADDING) * 2) // 2
-        self.maze = Maze.load_from_numpy_array(self.maze_data)
-        self.maze_model = MazeModel(self.maze, start_state = self.start_state)
-        self.agent = DynaQAgent(self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
-        self.agent_visualizer = AgentVisualizer(self.agent)
+        
 
         self.maze_visualizer = MazeVisualizer(0, self.discount_factor_display.y + self.discount_factor_display.height + self.PADDING, 
-                                        self.maze.walls, item_width, item_height, self.start_state, self.maze.goal_states, [self.agent_visualizer], 
+                                        self.maze.walls, item_width, item_height, self.maze.start, self.maze.goal_states, [self.agent_visualizer], 
                                         wall_color=(128, 128, 128), path_color=(255, 255, 255), player_color=(255, 0, 0))
         self.policy_visualizer = MazePolicyVisualizer(self.maze_visualizer.x, self.maze_visualizer.y, self.agent.generate_policy, 
                                             self.maze_visualizer.width, self.maze_visualizer.height, cell_color=None, 

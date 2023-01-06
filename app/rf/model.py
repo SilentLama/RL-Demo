@@ -3,9 +3,9 @@ import numpy as np
 from .maze import Maze
 
 class MazeModel:
-    def __init__(self, maze: Maze, start_state = None):
+    def __init__(self, maze: Maze):
         self._maze = maze
-        self.start_state = start_state if start_state is not None else self.get_random_state()
+        self.start_state = self._maze.start
         self._rows, self._cols = maze.shape
         self.state_action_lookup_table = dict()
         self.action_map = ((-1, 0), (0, 1), (1, 0), (0, -1)) # ("up", "right", "down", "left")
