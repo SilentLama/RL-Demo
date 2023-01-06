@@ -1,62 +1,117 @@
 import numpy as np
 from time import sleep
 
+class AgentVisualizer:
+    def __init__(self, agent, color = (255, 0, 0)):
+        self.agent = agent
+        self.color = color
+
+    @property
+    def coordinates(self):
+        return self.agent.state
+
 class DynaQAgent:
-    def __init__(self, model):
+    def __init__(self, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause = None):
         self.model = model
         self.value_function = model.get_blank_value_function()
+        self.learning_rate = learning_rate
+        self.discount_factor = discount_factor
+        self.epsilon = epsilon
+        self.max_steps_per_episode = max_steps_per_episode
+        self.planning_steps = planning_steps
+        self.state = self.model.start_state
+        self.visited_state_actions = np.full(self.value_function.shape, False)
+        self.episode_reward = 0
+        self.episode_rewards = []
+        self.episode_step = 0
+        self.steps_per_episode = []
+        self.episode = 0
+        self.step = 0
+        self.pause = None
 
-    def train(self, max_steps, planning_steps, epsilon = 0.95, learning_rate = 0.1, discount_factor = 0.9, episodes = 1):
-        for episode in range(episodes):
-            self.dyna(self.model, self.value_function, max_steps, planning_steps, 
-                        epsilon = epsilon, learning_rate = learning_rate, discount_factor = discount_factor)
+    @property
+    def state_reward_table(self):
+        """Displays the reward at a given state"""
+        return self.value_function.max(axis = 2) # return the max reward at that state (greedy action)
 
+    def reset(self):
+        self.value_function = self.model.get_blank_value_function()
+        self.episode_reward = 0
+        self.episode_rewards.clear()
+        self.episode_step = 0
+        self.steps_per_episode.clear()
+        self.episode = 0
+        self.step = 0
 
     def dyna(self, model, state, planning_steps, epsilon = 0.9):
         if np.random.uniform() > epsilon:
-            action = model.get_random_action()
+            action = self.get_random_action()
         else:
-            action = model.get_greedy_action(state)
+            action = self.get_greedy_action(state)
 
         reward, next_state = model.execute_action(state, action)
+        self.visited_state_actions[state][action] = True
         
-        #value_function[state][action] += learning_rate * (reward + discount_factor * (np.argmax(value_function[next_state]) - value_function[state][action]))
+        self.update_value_function(state, action, reward, next_state)
         model.update(state, action, reward, next_state)
-        state = next_state
         # planning
         for _ in range(planning_steps):
-            p_state, p_action, p_reward, p_next_state = model.sample()
-            model.update(p_state, p_action, p_reward, p_next_state)
-        return state, reward
+            state, action = self.get_random_visited_state_action()
+            sample_reward, sample_next_state = model.sample(state, action)
+            self.update_value_function(state, action, sample_reward, sample_next_state)
+        return next_state, reward
 
-    def train_steps(self, n, algorithm, model, state, planning_steps, epsilon = 0.9, 
-                    pause = None, update_state = None):
-        cumulated_reward = 0
+    def train_steps(self, n, algorithm):
         for _ in range(n):
-            state, reward = algorithm(model, state, planning_steps, epsilon = epsilon)
-            cumulated_reward += reward
-            if update_state is not None:
-                update_state(state)
-            if model.is_terminal_state(state):
+            self.state, reward = algorithm(self.model, self.state, self.planning_steps, epsilon = self.epsilon)
+            self.episode_reward += reward
+            self.step += 1
+            self.episode_step += 1
+            if self.model.is_terminal_state(self.state) or self.episode_step >= self.max_steps_per_episode:
+                self.state = self.model.start_state
+                self.steps_per_episode.append(self.episode_step)
+                self.episode_rewards.append(self.episode_reward)
+                self.episode += 1
+                self.episode_step = 0
+                self.episode_reward = 0
                 break
-            if pause is not None:
-                sleep(pause)
 
-        return state, cumulated_reward
+            if self.pause is not None:
+                sleep(self.pause)
+    
+    def train_episode(self, algorithm):
+        return self.train_steps(self.max_steps_per_episode, algorithm)
 
-    def train_episode(self, algorithm, max_steps, model, state, planning_steps, epsilon = 0.9, 
-                        pause = None, update_state = None):
-        return self.train_steps(max_steps, algorithm, model, state, planning_steps, epsilon = epsilon, 
-                                pause = pause, update_state = update_state)
-
-    def execute_policy(self, model, start_state, pause, update_state, max_steps):
+    def execute_policy(self, model, start_state, pause, max_steps):
         """Execute a run following just the trained policy"""
         state = start_state
         steps = 0
         while not model.is_terminal_state(state) and steps < max_steps:
-            action = model.get_greedy_action(state)
-            _, state = model.execute_action(state, action)
-            update_state(state)
+            action = self.get_greedy_action(state)
+            _, self.state = model.execute_action(state, action)
             steps += 1
             sleep(pause)
-        return state
+        self.state = self.model.start_state
+
+    def update_value_function(self, state, action, reward, next_state):
+        self.value_function[state][action] += self.learning_rate * self.get_temporal_difference(state, action, reward, next_state)
+
+    def get_temporal_difference(self, state, action, reward, next_state):
+        return reward + self.discount_factor * self.value_function[next_state].max() - self.value_function[state][action]
+
+    def get_greedy_action(self, state):
+        """Return the greedy action (i.e action with highest reward)
+        Ties are solved uniformly
+        """
+        return np.random.choice(np.where(self.value_function[state] == self.value_function[state].max())[0])
+
+    def get_random_action(self):
+        return np.random.choice(self.value_function.shape[2])
+
+    def generate_policy(self):
+        return np.argmax(self.value_function, axis = 2)
+
+    def get_random_visited_state_action(self):
+        rows, cols, actions = np.where(self.visited_state_actions)
+        state_idx = np.random.choice(len(rows))
+        return (rows[state_idx], cols[state_idx]), actions[state_idx]
