@@ -6,7 +6,7 @@ from ..enums import RenderLayer
 
 
 class MazePolicyVisualizer(GameObject):
-    def __init__(self, x, y, policy_function, width, height, cell_color=(255, 255, 255), grid_color=(0, 0, 0), arrow_color=(0, 0, 0), layer=RenderLayer.GAME):
+    def __init__(self, x, y, policy_function, width, height, cell_color=(255, 255, 255), grid_color=(0, 0, 0), arrow_color=(0, 0, 0), policy_mask_function = None, layer=RenderLayer.GAME):
         """A maze policy visualizer that can be rendered on the screen.
 
         The maze policy visualizer is rendered using the `x` and `y` coordinates, and has a `width` and `height` that determines the size of each cell. It uses a two dimensional numpy array `policy` to determine which direction should be displayed in each cell, and colors the arrows using the `arrow_color` attribute. The cells are colored using the `cell_color` attribute. The maze policy visualizer is rendered on the `GAME` layer by default, but this can be changed using the `layer` parameter.
@@ -27,6 +27,7 @@ class MazePolicyVisualizer(GameObject):
         self.cell_color = cell_color
         self.grid_color = grid_color
         self.arrow_color = arrow_color
+        self.policy_mask_function = policy_mask_function # where the policy should be displayed
         self.rows, self.cols = self.policy_function().shape
         self.cell_size = min(self.width // self.cols, self.height // self.rows)
 
@@ -36,6 +37,7 @@ class MazePolicyVisualizer(GameObject):
     def draw(self, screen):
         # Loop through the rows and columns of the policy
         policy = self.policy_function()
+        policy_mask = self.policy_mask_function() if self.policy_mask_function is not None else None
         for i, row in enumerate(policy):
             for j, cell in enumerate(row):
                 # Calculate the x and y coordinates of the cell
@@ -44,6 +46,8 @@ class MazePolicyVisualizer(GameObject):
                 # Draw the cell
                 if self.cell_color is not None:
                     pygame.draw.rect(screen, self.cell_color, (x, y, self.cell_size, self.cell_size))
+                if policy_mask is not None and not policy_mask[i, j]:
+                    continue
                 arrow_x = x + self.cell_size / 2
                 arrow_y = y + self.cell_size / 2
                 # Draw the arrow

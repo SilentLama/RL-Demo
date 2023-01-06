@@ -158,7 +158,8 @@ class DynaQMazeScene(Scene):
                                         self.maze.walls, item_width, item_height, self.start_state, self.maze.goal_states, [self.agent_visualizer], 
                                         wall_color=(128, 128, 128), path_color=(255, 255, 255), player_color=(255, 0, 0))
         self.policy_visualizer = MazePolicyVisualizer(self.maze_visualizer.x, self.maze_visualizer.y, self.agent.generate_policy, 
-                                            self.maze_visualizer.width, self.maze_visualizer.height, cell_color=None)
+                                            self.maze_visualizer.width, self.maze_visualizer.height, cell_color=None, 
+                                            policy_mask_function = lambda: self.agent.state_reward_table != 0)
         self.table = TableVisualizer(self.maze_visualizer.x, self.maze_visualizer.y + self.maze_visualizer.height, item_width, item_height, 
                                     lambda: self.agent.state_reward_table, grid_color=(0, 0, 0))
         self.heatmap = HeatMapVisualizer(self.table.x, self.table.y, lambda: self.agent.state_reward_table, self.table.width, self.table.height)
