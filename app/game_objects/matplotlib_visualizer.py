@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import pygame
-import threading
+# import threading
 
 from .game_object import GameObject
 from ..enums import RenderLayer
@@ -23,33 +23,30 @@ class MatplotlibPlotDisplay(GameObject):
         self.width = width
         self.height = height
         # Create a canvas to draw the figure on
-        self.figure.canvas.draw()
+        self.update_image()
+        # self.update_semaphore = threading.Semaphore(1)
+        # self.worker_thread = threading.Thread(target=self.update_image, daemon=True)
+        # self.worker_thread.start()
+        self.update_flag = False
+
+    def update_next_frame(self):
+        self.update_flag = True
+    
+    def update_image(self):
+        self.figure.canvas.draw()          
         self.image = self.figure.canvas.tostring_rgb()
         self.image_size = self.figure.canvas.get_width_height()
         self.image = pygame.image.fromstring(self.image, self.image_size, "RGB")
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        self.update_semaphore = threading.Semaphore(1)
-        self.worker_thread = threading.Thread(target=self.update_image, daemon=True)
-        self.worker_thread.start()
-    
-    def update_image(self):
-        while True:
-            self.update_semaphore.acquire()            
-            self.image = self.figure.canvas.tostring_rgb()
-            self.image_size = self.figure.canvas.get_width_height()
-            self.image = pygame.image.fromstring(self.image, self.image_size, "RGB")
-            self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
     def update(self, events):
         """Update the matplotlib plot display with the latest data from the figure.
 
         :param pygame.display window: The window to update the plot display for.
         """
-        # Redraw the figure
-        # print("RELEASE")
-        # self.worker_thread.run()
-        self.figure.canvas.draw()
-        self.update_semaphore.release()
+        if self.update_flag:
+            self.update_image()
+            self.update_flag = False
     
     def draw(self, screen):
         # Draw the image
