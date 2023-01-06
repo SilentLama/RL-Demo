@@ -36,6 +36,7 @@ class DynaQAgent:
 
     def reset(self):
         self.value_function = self.model.get_blank_value_function()
+        self.visited_state_actions[:] = False
         self.episode_reward = 0
         self.episode_rewards.clear()
         self.episode_step = 0
