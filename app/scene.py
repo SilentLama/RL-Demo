@@ -52,12 +52,13 @@ class DynaQMazeScene(Scene):
         self.update_plots()
 
     def execute_policy_thread_function(self):
-        self.agent.execute_policy(self.maze_model, self.state, self.pause / 1000, 50)
+        self.agent.execute_policy(self.maze_model, 50)
         self.state = self.start_state
         self.maze_visualizer.player_coords = self.state
 
     def pause_slider_function(self, pause_value):
-        self.agent.pause = round(pause_value) / 1000
+        pause_value = round(pause_value) / 1000
+        self.agent.pause = pause_value if pause_value > 0 else None
 
     def planning_steps_slider_function(self, planning_steps):
         self.agent.planning_steps = round(planning_steps)
@@ -92,7 +93,6 @@ class DynaQMazeScene(Scene):
         self.epsilon = 0.9
         self.discount_factor = 0.95
         self.start_state = (2, 0)
-        self.state = self.start_state
         self.planning_steps = 0
         self.max_steps_per_episode = 1000
         self.pause = 0 # ms
@@ -126,7 +126,7 @@ class DynaQMazeScene(Scene):
                                                 self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Discount factor", lambda: self.agent.discount_factor, 
                                                 **self.BUTTON_KWARGS)
         self.pause_display = VariableDisplay(self.discount_factor_display.x + self.discount_factor_display.width + self.PADDING, self.discount_factor_display.y, 
-                                                self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Pause [ms]", lambda: self.agent.pause, 
+                                                self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Pause [ms]", lambda: self.agent.pause * 1000 if self.agent.pause is not None else 0, 
                                                 **self.BUTTON_KWARGS)
         self.plan_steps_display = VariableDisplay(self.pause_display.x + self.pause_display.width + self.PADDING, self.pause_display.y, 
                                                 self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Plan steps", lambda: self.agent.planning_steps, 

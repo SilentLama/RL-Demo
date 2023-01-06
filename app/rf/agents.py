@@ -82,15 +82,16 @@ class DynaQAgent:
     def train_episode(self, algorithm):
         return self.train_steps(self.max_steps_per_episode, algorithm)
 
-    def execute_policy(self, model, start_state, pause, max_steps):
+    def execute_policy(self, model, max_steps):
         """Execute a run following just the trained policy"""
-        state = start_state
+        self.state = self.model.start_state
         steps = 0
-        while not model.is_terminal_state(state) and steps < max_steps:
-            action = self.get_greedy_action(state)
-            _, self.state = model.execute_action(state, action)
+        while not model.is_terminal_state(self.state) and steps < max_steps:
+            action = self.get_greedy_action(self.state)
+            _, self.state = model.execute_action(self.state, action)
             steps += 1
-            sleep(pause)
+            if self.pause is not None:
+                sleep(self.pause)
         self.state = self.model.start_state
 
     def update_value_function(self, state, action, reward, next_state):
