@@ -4,7 +4,7 @@ from .game_object import GameObject
 from ..enums import RenderLayer
 
 class FPSDisplay(GameObject):
-    def __init__(self, x, y, width, height, window, background_color=(0, 0, 0), font_color=(255, 255, 255), font_size=20, layer=RenderLayer.UI):
+    def __init__(self, x, y, width, height, window, background_color=None, font_color=(255, 255, 255), font_size=20, layer=RenderLayer.UI):
         """A FPS display that can be rendered on the screen.
 
         The FPS display is rendered using the `x` and `y` coordinates, and has a `width` and `height` that determines the size of the display. It is colored using the `background_color` and has a font with the specified `font_color` and `font_size`. The FPS display is rendered on the `UI` layer by default, but this can be changed using the `layer` parameter.
@@ -36,7 +36,8 @@ class FPSDisplay(GameObject):
     
     def draw(self, screen):
         # Draw the background
-        pygame.draw.rect(screen, self.background_color, (self.x, self.y, self.width, self.height))
+        if self.background_color is not None:
+            pygame.draw.rect(screen, self.background_color, (self.x, self.y, self.width, self.height))
         # Render the FPS text
         text = self.font.render(f"FPS: {self.fps:.2f}", True, self.font_color)
         # Calculate the text position
