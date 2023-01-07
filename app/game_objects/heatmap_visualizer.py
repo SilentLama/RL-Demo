@@ -34,7 +34,6 @@ class HeatMapVisualizer(GameObject):
         self.cell_size = min(self.width // self.cols, self.height // self.rows)
         self.cell_width = self.cell_size
         self.cell_height = self.cell_size
-        self.recompute_min_max(data)
 
     def update(self, events):
         # No updates needed for the table visualizer
@@ -43,21 +42,27 @@ class HeatMapVisualizer(GameObject):
     def draw(self, screen):
         # Iterate over the data array and draw the cells
         data = self.data_function()
-        self.recompute_min_max(data)
+        low_colors, high_colors = self.calculate_colors(data)
         for i in range(self.rows):
             for j in range(self.cols):
                 # Determine the color of the cell
                 if data[i, j] >= self.threshold:
-                    color = self.high_color 
-                    interval = [0, self.max_value]
+                    color = tuple(high_colors[i, j])
                 else:
-                    color = self.low_color
-                    interval = [0, abs(self.min_value)]
-                color = tuple([int(np.interp(abs(data[i, j]), interval, [0, color_value])) for color_value in color])                
+                    color = tuple(low_colors[i, j])
                 # Draw the cell
                 pygame.draw.rect(screen, color, (self.x + j * self.cell_width, self.y + i * self.cell_height, self.cell_width, self.cell_height))
     
-    def recompute_min_max(self, data):
-        """Recompute the minimum and maximum values in the data array."""
-        self.min_value = data.min()
-        self.max_value = data.max()
+    def calculate_colors(self, data):
+        data_RGB= np.abs(np.stack((data.copy(), data.copy(), data.copy()), axis = 2))
+        high_color_array = np.array(self.high_color)
+        low_color_array = np.array(self.high_color)
+        
+        low_rgb_colors = data_RGB / data.min()
+        high_rgb_colors = data_RGB / data.max()
+        np.nan_to_num(low_rgb_colors, copy = False, posinf = 0)
+        np.nan_to_num(high_rgb_colors, copy = False, posinf = 0)
+
+        np.multiply(low_rgb_colors, low_color_array, out = low_rgb_colors)
+        np.multiply(high_rgb_colors, high_color_array, out = high_rgb_colors)
+        return low_rgb_colors, high_rgb_colors
