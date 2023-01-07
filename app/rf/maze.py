@@ -71,27 +71,6 @@ class MazeGenerator:
                     surrounding_walls = get_surrounding_walls(wall_x, wall_y)
                     for wall in surrounding_walls:
                         if wall not in walls: walls.append(wall)
-                
-            # if wall_x not in (0, cols - 1) and not maze[wall_y, wall_x + 1] and maze[wall_y, wall_x - 1]:
-            #     if get_number_of_path_neighbours(wall_x, wall_y) <= 1:
-            #         maze[wall_y, wall_x] = True
-            #         surrounding_walls = get_surrounding_walls(wall_x, wall_y)
-            #         for wall in surrounding_walls:
-            #             if wall not in walls: walls.append(wall)
-            
-            # if wall_y not in (0, rows - 1) and not maze[wall_y - 1, wall_x] and maze[wall_y + 1, wall_x]:
-            #     if get_number_of_path_neighbours(wall_x, wall_y) <= 1:
-            #         maze[wall_y, wall_x] = True
-            #         surrounding_walls = get_surrounding_walls(wall_x, wall_y)
-            #         for wall in surrounding_walls:
-            #             if wall not in walls: walls.append(wall)
-            
-            # if wall_y not in (0, rows - 1) and not maze[wall_y + 1, wall_x] and maze[wall_y - 1, wall_x]:
-            #     if get_number_of_path_neighbours(wall_x, wall_y) <= 1:
-            #         maze[wall_y, wall_x] = True
-            #         surrounding_walls = get_surrounding_walls(wall_x, wall_y)
-            #         for wall in surrounding_walls:
-            #             if wall not in walls: walls.append(wall)
         return maze
 
     @staticmethod
