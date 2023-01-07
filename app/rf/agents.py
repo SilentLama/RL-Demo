@@ -35,6 +35,7 @@ class DynaQAgent:
         return self.value_function.max(axis = 2) # return the max reward at that state (greedy action)
 
     def reset(self):
+        self.state = self.model.start_state
         self.value_function = self.model.get_blank_value_function()
         self.visited_state_actions[:] = False
         self.episode_reward = 0
