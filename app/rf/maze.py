@@ -122,9 +122,9 @@ class MazeGenerator:
         return search_path(start_corner), search_path(end_corner)
 
     @staticmethod
-    def generate(rows, cols, algorithm = "prims"):
+    def generate(rows, cols, algorithm = "prims", base_reward = 0, goal_reward = 1):
         if algorithm.lower() == "prims":
             maze_walls = MazeGenerator._generate_prims(rows, cols)
             start, goal = MazeGenerator.generate_start_and_goal(maze_walls)
-            rewards = MazeGenerator.generate_rewards(maze_walls, goal)
+            rewards = MazeGenerator.generate_rewards(maze_walls, goal, base_reward = base_reward, goal_reward = goal_reward)
             return Maze(maze_walls, rewards, start) 
