@@ -54,12 +54,11 @@ class MazePolicyVisualizer(GameObject):
                 if cell == 0:
                     pygame.draw.polygon(screen, self.arrow_color, [(arrow_x, arrow_y - self.cell_size / 4), (arrow_x - self.cell_size / 4, arrow_y), (arrow_x + self.cell_size / 4, arrow_y)])
                 elif cell == 1:
-                    # pygame.draw.polygon(screen, self.arrow_color, [(arrow_x + self.cell_size / 4, arrow_y - self.cell_size / 4), (arrow_x + self.cell_size / 4, arrow_y + self.cell_size / 4), (arrow_x, arrow_y)])
                     pygame.draw.polygon(screen, self.arrow_color, [(arrow_x - self.cell_size / 4, arrow_y - self.cell_size / 4), (arrow_x - self.cell_size / 4, arrow_y + self.cell_size / 4), (arrow_x, arrow_y)])
                 elif cell == 2:
                     pygame.draw.polygon(screen, self.arrow_color, [(arrow_x, arrow_y + self.cell_size / 4), (arrow_x - self.cell_size / 4, arrow_y), (arrow_x + self.cell_size / 4, arrow_y)])
                 elif cell == 3:
-                    pygame.draw.polygon(screen, self.arrow_color, [(arrow_x - self.cell_size / 4, arrow_y - self.cell_size / 4), (arrow_x - self.cell_size / 4, arrow_y + self.cell_size / 4), (arrow_x, arrow_y)])
+                    pygame.draw.polygon(screen, self.arrow_color, [(arrow_x + self.cell_size / 4, arrow_y - self.cell_size / 4), (arrow_x + self.cell_size / 4, arrow_y + self.cell_size / 4), (arrow_x, arrow_y)])
         # Draw the grid lines
         if self.grid_color is not None:
             for i in range(self.rows + 1):
