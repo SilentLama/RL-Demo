@@ -56,9 +56,9 @@ class HeatMapVisualizer(GameObject):
     def calculate_colors(self, data):
         data_RGB= np.abs(np.stack((data.copy(), data.copy(), data.copy()), axis = 2))
         high_color_array = np.array(self.high_color)
-        low_color_array = np.array(self.high_color)
+        low_color_array = np.array(self.low_color)
         
-        low_rgb_colors = data_RGB / data.min()
+        low_rgb_colors = data_RGB / np.abs(data.min())
         high_rgb_colors = data_RGB / data.max()
         np.nan_to_num(low_rgb_colors, copy = False, posinf = 0)
         np.nan_to_num(high_rgb_colors, copy = False, posinf = 0)
