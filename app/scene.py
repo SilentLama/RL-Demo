@@ -359,7 +359,7 @@ class DynaQMazeMultiAgentScene(Scene):
         self.agent_two = DynaQAgent(self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
         self.agent_three = DynaQAgent(self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
         self.agent_one_visualizer = AgentVisualizer(self.agent_one)
-        self.agent_two_visualizer = AgentVisualizer(self.agent_two, color = (255, 255, 0))
+        self.agent_two_visualizer = AgentVisualizer(self.agent_two, color = (255, 0, 255))
         self.agent_three_visualizer = AgentVisualizer(self.agent_three, color = (0, 0, 255))
 
         self.selected_policy_agent = None # keep track of the currently selected policy to display
@@ -381,7 +381,7 @@ class DynaQMazeMultiAgentScene(Scene):
 
         # BUTTON BAR
         self.episode_display = VariableDisplay(0, 0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Episode", 
-                                            lambda: self.agent_one.episode, **self.BUTTON_KWARGS)
+                                            lambda:"X", **self.BUTTON_KWARGS)
         self.one_episode_button = Button(self.episode_display.x + self.episode_display.width  + self.PADDING,
                                         0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "1", lambda: self.train_episode(1), **self.BUTTON_KWARGS)
         self.ten_episode_button = Button(self.one_episode_button.x + self.one_episode_button.width  + self.PADDING,
@@ -391,7 +391,7 @@ class DynaQMazeMultiAgentScene(Scene):
 
         self.step_display = VariableDisplay(self.hundred_episode_button.x + self.hundred_episode_button.width + self.PADDING, 
                                             0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Step", 
-                                            lambda: self.agent_one.step, **self.BUTTON_KWARGS)
+                                            lambda: "X", **self.BUTTON_KWARGS)
         self.one_step_button = Button(self.step_display.x + self.step_display.width  + self.PADDING,
                                         0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "1", lambda: self.train_step(1), **self.BUTTON_KWARGS)
         self.ten_step_button = Button(self.one_step_button.x + self.one_step_button.width  + self.PADDING,
