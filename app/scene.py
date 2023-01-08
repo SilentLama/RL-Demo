@@ -604,6 +604,7 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         for agent in self.agents:
             agent.reset()
         self.maze_model.reset()
+        self.dynaq_plus_maze_model.reset()
         self.update_plots()
 
     def start_button_function(self):
@@ -780,7 +781,7 @@ class DynaQPlusMazeMultiAgentScene(Scene):
                                         self.maze_visualizer.y, slider_width, item_height * 2 - 50, "Pause [ms]", 1, 250, bar_width, handle_radius, self.pause_slider_function,
                                         handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
         self.k_slider = Slider(self.k_display.x, self.k_display.y + self.k_display.height, self.k_display.width, self.window.height - (self.k_display.y + self.k_display.height) - 50,
-                                "K", 0, 0.01, bar_width, handle_radius, lambda val: self.k_lider_function(self.agent_one, val),
+                                "K", 0, 0.002, bar_width, handle_radius, lambda val: self.k_lider_function(self.agent_one, val),
                                 handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
 
         plan_step_slider_width = self.steps_per_episode_plot.width // 3 - self.PADDING
