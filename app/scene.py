@@ -462,20 +462,41 @@ class DynaQMazeMultiAgentScene(Scene):
                                         self.maze_visualizer.y, slider_width, item_height * 2 - 50, "Pause [ms]", 0, 250, bar_width, handle_radius, self.pause_slider_function,
                                         handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
 
-        plan_step_slider_width = self.steps_per_episode_plot.width / 3 - self.PADDING
-        
+        plan_step_slider_width = self.steps_per_episode_plot.width // 3 - self.PADDING
+        agent_variable_display_width = plan_step_slider_width // 2 - self.PADDING // 2
         self.agent_one_plan_steps_display = VariableDisplay(self.steps_per_episode_plot.x, self.table.y, 
                                                 plan_step_slider_width, self.BUTTON_HEIGHT, "Plan steps", lambda: self.agent_one.planning_steps, 
                                                 **self.BUTTON_KWARGS)
+        self.agent_one_episode_display = VariableDisplay(self.agent_one_plan_steps_display.x, self.agent_one_plan_steps_display.y + self.agent_one_plan_steps_display.height + self.PADDING, 
+                                                agent_variable_display_width, self.BUTTON_HEIGHT, "Episode", lambda: self.agent_one.episode, 
+                                                **self.BUTTON_KWARGS)
+        self.agent_one_step_display = VariableDisplay(self.agent_one_episode_display.x + self.agent_one_episode_display.width + self.PADDING, self.agent_one_episode_display.y, 
+                                                agent_variable_display_width, self.BUTTON_HEIGHT, "Step", lambda: self.agent_one.step, 
+                                                **self.BUTTON_KWARGS)
+
         self.agent_two_plan_steps_display = VariableDisplay(self.agent_one_plan_steps_display.x + self.agent_one_plan_steps_display.width + self.PADDING, self.agent_one_plan_steps_display.y, 
                                                 plan_step_slider_width, self.BUTTON_HEIGHT, "Plan steps", lambda: self.agent_two.planning_steps, 
                                                 **self.BUTTON_KWARGS)
+        self.agent_two_episode_display = VariableDisplay(self.agent_two_plan_steps_display.x, self.agent_two_plan_steps_display.y + self.agent_two_plan_steps_display.height + self.PADDING, 
+                                                agent_variable_display_width, self.BUTTON_HEIGHT, "Episode", lambda: self.agent_two.episode, 
+                                                **self.BUTTON_KWARGS)
+        self.agent_two_step_display = VariableDisplay(self.agent_two_episode_display.x + self.agent_two_episode_display.width + self.PADDING, self.agent_two_episode_display.y, 
+                                                agent_variable_display_width, self.BUTTON_HEIGHT, "Step", lambda: self.agent_two.step, 
+                                                **self.BUTTON_KWARGS)
+                                                
         self.agent_three_plan_steps_display = VariableDisplay(self.agent_two_plan_steps_display.x + self.agent_two_plan_steps_display.width + self.PADDING, self.agent_two_plan_steps_display.y, 
                                                 plan_step_slider_width, self.BUTTON_HEIGHT, "Plan steps", lambda: self.agent_three.planning_steps, 
                                                 **self.BUTTON_KWARGS)
-        slider_height = self.table.height - self.BUTTON_HEIGHT - 50
+        self.agent_three_episode_display = VariableDisplay(self.agent_three_plan_steps_display.x, self.agent_three_plan_steps_display.y + self.agent_three_plan_steps_display.height + self.PADDING, 
+                                                agent_variable_display_width, self.BUTTON_HEIGHT, "Episode", lambda: self.agent_three.episode, 
+                                                **self.BUTTON_KWARGS)
+        self.agent_three_step_display = VariableDisplay(self.agent_three_episode_display.x + self.agent_three_episode_display.width + self.PADDING, self.agent_three_episode_display.y, 
+                                                agent_variable_display_width, self.BUTTON_HEIGHT, "Step", lambda: self.agent_three.step, 
+                                                **self.BUTTON_KWARGS)
+
+        slider_height = self.table.height - self.BUTTON_HEIGHT * 2 - self.PADDING - 50
         self.agent_one_plan_steps_slider = Slider(self.agent_one_plan_steps_display.x,
-                                        self.agent_one_plan_steps_display.y + self.agent_one_plan_steps_display.height, plan_step_slider_width, slider_height, "Agent 1 P-Steps", 0, 100, bar_width, handle_radius, lambda p_steps: self.planning_steps_slider_function(p_steps, self.agent_one),
+                                        self.agent_one_episode_display.y + self.agent_one_episode_display.height, plan_step_slider_width, slider_height, "Agent 1 P-Steps", 0, 100, bar_width, handle_radius, lambda p_steps: self.planning_steps_slider_function(p_steps, self.agent_one),
                                         handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=self.agent_one_visualizer.color, font_size=self.FONT_SIZE)
         
         self.agent_two_plan_steps_slider = Slider(self.agent_one_plan_steps_slider.x + self.agent_one_plan_steps_slider.width + self.PADDING,
@@ -487,6 +508,8 @@ class DynaQMazeMultiAgentScene(Scene):
 
         fps_display = FPSDisplay(self.window.width - self.BUTTON_WIDTH // 2, 0, self.BUTTON_WIDTH // 2, self.BUTTON_HEIGHT // 2, self.window, font_size=self.FONT_SIZE // 2)
 
+
+
         for object_ in (self.episode_display, self.one_episode_button, self.ten_episode_button, self.hundred_episode_button,
                         self.step_display, self.one_step_button, self.ten_step_button, self.hundred_step_button, 
                         self.learning_rate_display, self.epsilon_display, self.discount_factor_display, self.pause_display, self.heatmap_overlay_button,
@@ -496,6 +519,7 @@ class DynaQMazeMultiAgentScene(Scene):
 
                         self.maze_visualizer, self.table, self.steps_per_episode_plot,
                         self.agent_one_plan_steps_display, self.agent_two_plan_steps_display, self.agent_three_plan_steps_display,
+                        self.agent_one_episode_display, self.agent_one_step_display, self.agent_two_episode_display, self.agent_two_step_display, self.agent_three_episode_display, self.agent_three_step_display,
                         self.pause_length_slider, self.agent_one_plan_steps_slider, self.agent_two_plan_steps_slider, self.agent_three_plan_steps_slider,
 
                         fps_display):
