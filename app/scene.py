@@ -613,6 +613,9 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         pause_value = round(pause_value) / 1000
         for agent in self.agents:
             agent.pause = pause_value if pause_value > 0 else None
+    
+    def k_lider_function(self, agent, k):
+        agent.k = round(k, 5)
 
     def planning_steps_slider_function(self, planning_steps, agent):
         agent.planning_steps = round(planning_steps)
@@ -727,6 +730,8 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         self.execute_policy_button = Button(self.policy_overlay_agent_three_button.x + self.policy_overlay_agent_three_button.width  + self.PADDING,
                                         self.policy_overlay_agent_three_button.y, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Execute Policy", 
                                         self.execute_policy_button_function, **self.BUTTON_KWARGS)
+        self.k_display = VariableDisplay(self.execute_policy_button.x, self.execute_policy_button.y + self.execute_policy_button.height + self.PADDING, 
+                                        self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "K", lambda: self.agent_one.k, **self.BUTTON_KWARGS)
         
 
         
@@ -759,6 +764,9 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         self.pause_length_slider = Slider(self.steps_per_episode_plot.x + self.steps_per_episode_plot.width + (self.window.width - self.steps_per_episode_plot.x - self.steps_per_episode_plot.width) // 3 - slider_width // 2,
                                         self.maze_visualizer.y, slider_width, item_height * 2 - 50, "Pause [ms]", 0, 250, bar_width, handle_radius, self.pause_slider_function,
                                         handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
+        self.k_slider = Slider(self.k_display.x, self.k_display.y + self.k_display.height, self.k_display.width, self.window.height - (self.k_display.y + self.k_display.height) - 50,
+                                "K", 0, 0.01, bar_width, handle_radius, lambda val: self.k_lider_function(self.agent_one, val),
+                                handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
 
         plan_step_slider_width = self.steps_per_episode_plot.width // 3 - self.PADDING
         agent_variable_display_width = plan_step_slider_width // 2 - self.PADDING // 2
@@ -812,7 +820,7 @@ class DynaQPlusMazeMultiAgentScene(Scene):
                         self.step_display, self.one_step_button, self.ten_step_button, self.hundred_step_button, 
                         self.learning_rate_display, self.epsilon_display, self.discount_factor_display, self.pause_display, self.heatmap_overlay_button,
                         self.policy_overlay_agent_one_button, self.policy_overlay_agent_two_button, self.execute_policy_button, self.policy_overlay_agent_three_button, 
-                        self.reset_button,
+                        self.reset_button, self.k_display, self.k_slider,
                          
 
                         self.maze_visualizer, self.table, self.steps_per_episode_plot,
