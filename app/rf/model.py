@@ -30,3 +30,19 @@ class MazeModel:
         """Sample a random state/action that has been visited before and return the experience"""
         reward, next_state = self.state_action_lookup_table[state, action]
         return reward, next_state
+
+class DynaQPlusMazeModel(MazeModel):
+    def __init__(self, maze: Maze):
+        super().__init__(maze)
+        self.init_lookup_table()
+
+    def init_lookup_table(self):
+        """Init the lookup table so that unknown state, action pairs lead back to the same state with zero reward."""
+        for i in range(self._rows):
+            for j in range(self._cols):
+                state = i, j
+                for action in range(len(self.action_map)):
+                    self.state_action_lookup_table[state, action] = (0, state)
+
+    def reset(self):
+        self.init_lookup_table()
