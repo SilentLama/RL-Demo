@@ -64,9 +64,9 @@ class DynaQAgent:
             self.update_value_function(state, action, sample_reward, sample_next_state)
         return next_state, reward
 
-    def train_steps(self, n, algorithm):
+    def train_steps(self, n):
         for _ in range(n):
-            self.state, reward = algorithm(self.state, self.planning_steps, epsilon = self.epsilon)
+            self.state, reward = self.dyna(self.state, self.planning_steps, epsilon = self.epsilon)
             self.episode_reward += reward
             self.step += 1
             self.episode_step += 1
@@ -82,8 +82,8 @@ class DynaQAgent:
             if self.pause is not None:
                 sleep(self.pause)
     
-    def train_episode(self, algorithm):
-        return self.train_steps(self.max_steps_per_episode, algorithm)
+    def train_episode(self):
+        return self.train_steps(self.max_steps_per_episode)
 
     def execute_policy(self, max_steps):
         """Execute a run following just the trained policy"""
@@ -124,7 +124,7 @@ class DynaQPlusAgent(DynaQAgent):
     def __init__(self, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause=None):
         super().__init__(model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause)
         self.visited_state_actions_bonus_table = np.zeros(self.visited_state_actions)
-        self.k = 0.1
+        self.k = 0.001
 
     def dyna_plus(self, model, state, planning_steps, epsilon = 0.9):
         if np.random.uniform() > epsilon:
@@ -144,8 +144,10 @@ class DynaQPlusAgent(DynaQAgent):
         model.update(state, action, reward, next_state)
         # planning
         for _ in range(planning_steps):
-            state, action = self.get_random_visited_state_action()
+            state, action = self.environment.get_random_state(), self.environment.get_random_action()
             sample_reward, sample_next_state = model.sample(state, action)
             self.update_value_function(state, action, sample_reward, sample_next_state)
         return next_state, reward
-    
+
+    def dyna(self, state, planning_steps, epsilon=0.9):
+        return self.dyna(state, planning_steps, epsilon)

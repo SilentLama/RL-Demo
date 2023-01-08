@@ -10,7 +10,7 @@ from .game_objects import (Button, TableVisualizer, MazeVisualizer, TextInput, H
 
 from app.rf.maze import Maze
 from app.rf.model import MazeModel
-from app.rf.agents import DynaQAgent, AgentVisualizer
+from app.rf.agents import DynaQAgent, AgentVisualizer, DynaQPlusAgent
 
 def rgb_to_mpl_colors(color):
     return tuple([c / 255 for c in color])
@@ -62,12 +62,12 @@ class DynaQMazeScene(Scene):
         agent.planning_steps = round(planning_steps)
 
     def train_steps_agent_thread_function(self, n):
-        self.agent.train_steps(n, self.agent.dyna)
+        self.agent.train_steps(n)
         self.update_plots()
 
     def train_episode_agent_thread_function(self, n):
         for _ in range(n):
-            self.agent.train_episode(self.agent.dyna)
+            self.agent.train_episode()
             self.update_plots()
 
     def update_plots(self):
@@ -320,12 +320,12 @@ class DynaQMazeMultiAgentScene(Scene):
         agent.planning_steps = round(planning_steps)
 
     def train_steps_agent_thread_function(self, n, agent):
-        agent.train_steps(n, agent.dyna)
+        agent.train_steps(n)
         self.update_plots()
 
     def train_episode_agent_thread_function(self, n, agent):
         for _ in range(n):
-            agent.train_episode(agent.dyna)
+            agent.train_episode()
             self.update_plots()
 
     def update_plots(self):        
@@ -620,12 +620,12 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         agent.planning_steps = round(planning_steps)
 
     def train_steps_agent_thread_function(self, n, agent):
-        agent.train_steps(n, agent.dyna)
+        agent.train_steps(n)
         self.update_plots()
 
     def train_episode_agent_thread_function(self, n, agent):
         for _ in range(n):
-            agent.train_episode(agent.dyna)
+            agent.train_episode()
             self.update_plots()
 
     def update_plots(self):        
@@ -655,7 +655,7 @@ class DynaQPlusMazeMultiAgentScene(Scene):
 
         self.maze = maze
         self.maze_model = MazeModel(self.maze)
-        self.agent_one = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
+        self.agent_one = DynaQPlusAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
         self.agent_two = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
         self.agent_three = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
         self.agent_one_visualizer = AgentVisualizer(self.agent_one)
