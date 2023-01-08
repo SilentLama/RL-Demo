@@ -303,7 +303,7 @@ class DynaQMazeMultiAgentScene(Scene):
             self.heatmap_overlay_button.text = "Disable Heatmap"
 
     def reset_button_function(self):
-        for agent in (self.agent_one, self.agent_two, self.agent_three):
+        for agent in self.agents:
             agent.reset()
         self.maze_model.reset()
         self.update_plots()
@@ -313,7 +313,7 @@ class DynaQMazeMultiAgentScene(Scene):
 
     def pause_slider_function(self, pause_value):
         pause_value = round(pause_value) / 1000
-        for agent in (self.agent_one, self.agent_two, self.agent_three):
+        for agent in self.agents:
             agent.pause = pause_value if pause_value > 0 else None
 
     def planning_steps_slider_function(self, planning_steps, agent):
@@ -329,13 +329,13 @@ class DynaQMazeMultiAgentScene(Scene):
             self.update_plots()
 
     def update_plots(self):        
-        for agent, line in zip((self.agent_one, self.agent_two, self.agent_three), 
+        for agent, line in zip(self.agents, 
                         (self.agent_one_steps_per_episode_line, 
                         self.agent_two_steps_per_episode_line, 
                         self.agent_three_steps_per_episode_line)):
             line.set_xdata([i for i in range(agent.episode)])
             line.set_ydata(agent.steps_per_episode)
-        self.agent_one_steps_per_episode_line.axes.set_xlim(0, max([a.episode for a in (self.agent_one, self.agent_two, self.agent_three)]))
+        self.agent_one_steps_per_episode_line.axes.set_xlim(0, max([a.episode for a in self.agents]))
         self.agent_one_steps_per_episode_line.axes.set_ylim(0, self.max_steps_per_episode + 1)
         
         self.steps_per_episode_plot.update_next_frame()
@@ -361,7 +361,7 @@ class DynaQMazeMultiAgentScene(Scene):
         self.agent_one_visualizer = AgentVisualizer(self.agent_one)
         self.agent_two_visualizer = AgentVisualizer(self.agent_two, color = (255, 0, 255))
         self.agent_three_visualizer = AgentVisualizer(self.agent_three, color = (0, 0, 255))
-
+        self.agents = (self.agent_one, self.agent_two, self.agent_three)
         self.selected_policy_agent = None # keep track of the currently selected policy to display
 
         self.create_widgets()
@@ -541,18 +541,18 @@ class DynaQMazeMultiAgentScene(Scene):
 
     def train_episode(self, n):
         # train n episodes
-        for agent in (self.agent_one, self.agent_two, self.agent_three):
+        for agent in self.agents:
             thread = Thread(target=self.train_episode_agent_thread_function, args = [n, agent], daemon=True)
             thread.start()
 
     def train_step(self, n):
         # train n steps
-        for agent in (self.agent_one, self.agent_two, self.agent_three):
+        for agent in self.agents:
             thread = Thread(target=self.train_steps_agent_thread_function, args = [n, agent], daemon=True)
             thread.start()
 
     def execute_policy_button_function(self):
-        for agent in (self.agent_one, self.agent_two, self.agent_three):
+        for agent in self.agents:
             thread = Thread(target=self.execute_policy_thread_function, args = [agent], daemon = True)
             thread.start()
 
