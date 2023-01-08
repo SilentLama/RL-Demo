@@ -170,5 +170,9 @@ class DynaQPlusAgent(DynaQAgent):
             self.update_value_function(state, action, sample_reward, sample_next_state)
         return next_state, reward
 
+    def reset(self):
+        super().reset()
+        self.visited_state_actions_bonus_table[:] = 0
+
     def train(self):
         return self.dyna_plus(self.state, self.planning_steps, epsilon = self.epsilon)
