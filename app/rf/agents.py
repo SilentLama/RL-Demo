@@ -141,8 +141,8 @@ class DynaQAgent:
         return (rows[state_idx], cols[state_idx]), actions[state_idx]
 
 class DynaQPlusAgent(DynaQAgent):
-    def __init__(self, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause=None, k = 0.001):
-        super().__init__(model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause)
+    def __init__(self, environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause=None, k = 0.001):
+        super().__init__(environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause)
         self.visited_state_actions_bonus_table = np.zeros(self.visited_state_actions.shape)
         self.k = k
 
