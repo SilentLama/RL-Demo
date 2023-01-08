@@ -9,7 +9,7 @@ from .game_objects import (Button, TableVisualizer, MazeVisualizer, TextInput, H
                             Slider)
 
 from app.rf.maze import Maze
-from app.rf.model import MazeModel
+from app.rf.model import MazeModel, DynaQPlusMazeModel
 from app.rf.agents import DynaQAgent, AgentVisualizer, DynaQPlusAgent
 
 def rgb_to_mpl_colors(color):
@@ -655,7 +655,8 @@ class DynaQPlusMazeMultiAgentScene(Scene):
 
         self.maze = maze
         self.maze_model = MazeModel(self.maze)
-        self.agent_one = DynaQPlusAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
+        self.dynaq_plus_maze_model = DynaQPlusMazeModel(self.maze)
+        self.agent_one = DynaQPlusAgent(self.maze, self.dynaq_plus_maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
         self.agent_two = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
         self.agent_three = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
         self.agent_one_visualizer = AgentVisualizer(self.agent_one)
@@ -796,7 +797,7 @@ class DynaQPlusMazeMultiAgentScene(Scene):
 
         slider_height = self.table.height - self.BUTTON_HEIGHT * 2 - self.PADDING - 50
         self.agent_one_plan_steps_slider = Slider(self.agent_one_plan_steps_display.x,
-                                        self.agent_one_episode_display.y + self.agent_one_episode_display.height, plan_step_slider_width, slider_height, "Agent 1 P-Steps", 0, 100, bar_width, handle_radius, lambda p_steps: self.planning_steps_slider_function(p_steps, self.agent_one),
+                                        self.agent_one_episode_display.y + self.agent_one_episode_display.height, plan_step_slider_width, slider_height, "Agent 1(+) P-Steps", 0, 100, bar_width, handle_radius, lambda p_steps: self.planning_steps_slider_function(p_steps, self.agent_one),
                                         handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=self.agent_one_visualizer.color, font_size=self.FONT_SIZE)
         
         self.agent_two_plan_steps_slider = Slider(self.agent_one_plan_steps_slider.x + self.agent_one_plan_steps_slider.width + self.PADDING,
