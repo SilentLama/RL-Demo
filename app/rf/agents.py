@@ -64,9 +64,12 @@ class DynaQAgent:
             self.update_value_function(state, action, sample_reward, sample_next_state)
         return next_state, reward
 
+    def train(self):
+        return self.dyna(self.state, self.planning_steps, epsilon = self.epsilon)
+
     def train_steps(self, n):
         for _ in range(n):
-            self.state, reward = self.dyna(self.state, self.planning_steps, epsilon = self.epsilon)
+            self.state, reward = self.train()
             self.episode_reward += reward
             self.step += 1
             self.episode_step += 1
@@ -123,31 +126,32 @@ class DynaQAgent:
 class DynaQPlusAgent(DynaQAgent):
     def __init__(self, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause=None):
         super().__init__(model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause)
-        self.visited_state_actions_bonus_table = np.zeros(self.visited_state_actions)
+        self.visited_state_actions_bonus_table = np.zeros(self.visited_state_actions.shape)
         self.k = 0.001
 
-    def dyna_plus(self, model, state, planning_steps, epsilon = 0.9):
+    def dyna_plus(self, state, planning_steps, epsilon = 0.9):
         if np.random.uniform() > epsilon:
             action = self.get_random_action()
         else:
             action = self.get_greedy_action(state)
 
-        reward, next_state = model.execute_action(state, action)
+        reward, next_state = self.environment.execute_action(state, action)
         self.visited_state_actions[state][action] = True
-        reward += self.k * np.sqrt(self.visited_state_actions_bonus_table[state, action])
+        
 
 
         self.visited_state_actions_bonus_table[self.visited_state_actions] += 1
-        self.visited_state_actions_bonus_table[state, action] = 0
+        self.visited_state_actions_bonus_table[state][action] = 0
         
         self.update_value_function(state, action, reward, next_state)
-        model.update(state, action, reward, next_state)
+        self.model.update(state, action, reward, next_state)
         # planning
         for _ in range(planning_steps):
             state, action = self.environment.get_random_state(), self.environment.get_random_action()
-            sample_reward, sample_next_state = model.sample(state, action)
+            sample_reward, sample_next_state = self.model.sample(state, action)
+            sample_reward += self.k * np.sqrt(self.visited_state_actions_bonus_table[state][action])
             self.update_value_function(state, action, sample_reward, sample_next_state)
         return next_state, reward
 
-    def dyna(self, state, planning_steps, epsilon=0.9):
-        return self.dyna(state, planning_steps, epsilon)
+    def train(self):
+        return self.dyna_plus(self.state, self.planning_steps, epsilon = self.epsilon)
