@@ -93,7 +93,6 @@ class DynaQMazeScene(Scene):
         self.learning_rate = 0.1
         self.epsilon = 0.9
         self.discount_factor = 0.95
-        self.start_state = (2, 0)
         self.planning_steps = 0
         self.max_steps_per_episode = 10000
         self.pause = 0 # ms
@@ -348,7 +347,6 @@ class DynaQMazeMultiAgentScene(Scene):
         self.learning_rate = 0.1
         self.epsilon = 0.9
         self.discount_factor = 0.95
-        self.start_state = (2, 0)
         self.planning_steps = 0
         self.max_steps_per_episode = 10000
         self.pause = 0 # ms
@@ -648,7 +646,6 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         self.learning_rate = 0.1
         self.epsilon = 0.9
         self.discount_factor = 0.95
-        self.start_state = (2, 0)
         self.planning_steps = 0
         self.max_steps_per_episode = 10000
         self.pause = 0 # ms
