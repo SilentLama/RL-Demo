@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from threading import Thread
+from threading import Thread, Event
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -606,6 +606,14 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         self.maze_model.reset()
         self.update_plots()
 
+    def start_button_function(self):
+        self.stop_event = Event()
+        thread = Thread(target=self.train_endless, args = [self.stop_event], daemon=True)
+        thread.start()
+
+    def stop_button_function(self):
+        self.stop_event.set()
+
     def execute_policy_thread_function(self, agent):
         agent.execute_policy(50)
 
@@ -619,6 +627,12 @@ class DynaQPlusMazeMultiAgentScene(Scene):
 
     def planning_steps_slider_function(self, planning_steps, agent):
         agent.planning_steps = round(planning_steps)
+
+    def train_endless(self, stop_event):
+        while not stop_event.is_set():
+            for agent in self.agents:
+                agent.train_steps(1)
+            self.update_plots()
 
     def train_steps_agent_thread_function(self, n, agent):
         for _ in range(n):
@@ -647,19 +661,19 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         self.window = Window(width, height, title, max_fps)
         self.window.add_size_change_callback(self.create_widgets)
 
-        self.learning_rate = 0.1
+        self.learning_rate = 0.25
         self.epsilon = 0.9
         self.discount_factor = 0.95
         self.planning_steps = 0
         self.max_steps_per_episode = 10000
-        self.pause = 0 # ms
+        self.pause = 1 / 1000 # ms
 
         self.maze = maze
         self.maze_model = MazeModel(self.maze)
         self.dynaq_plus_maze_model = DynaQPlusMazeModel(self.maze)
-        self.agent_one = DynaQPlusAgent(self.maze, self.dynaq_plus_maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
-        self.agent_two = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
-        self.agent_three = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
+        self.agent_one = DynaQPlusAgent(self.maze, self.dynaq_plus_maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps, k = 0.001, pause = self.pause)        
+        self.agent_two = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps, pause = self.pause)        
+        self.agent_three = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps, pause = self.pause)
         self.agent_one_visualizer = AgentVisualizer(self.agent_one)
         self.agent_two_visualizer = AgentVisualizer(self.agent_two, color = (255, 0, 255))
         self.agent_three_visualizer = AgentVisualizer(self.agent_three, color = (0, 0, 255))
@@ -682,30 +696,30 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         }
 
         # BUTTON BAR
-        self.episode_display = VariableDisplay(0, 0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Episode", 
-                                            lambda:"X", **self.BUTTON_KWARGS)
-        self.one_episode_button = Button(self.episode_display.x + self.episode_display.width  + self.PADDING,
-                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "1", lambda: self.train_episode(1), **self.BUTTON_KWARGS)
+        self.start_button = Button(0, 0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Start", 
+                                            self.start_button_function, **self.BUTTON_KWARGS)
+        self.stop_button = Button(self.start_button.x + self.start_button.width + self.PADDING, self.start_button.y, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Stop", 
+                                            self.stop_button_function, **self.BUTTON_KWARGS)
+        self.one_episode_button = Button(self.stop_button.x + self.stop_button.width  + self.PADDING,
+                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "1 Episode", lambda: self.train_episode(1), **self.BUTTON_KWARGS)
         self.ten_episode_button = Button(self.one_episode_button.x + self.one_episode_button.width  + self.PADDING,
-                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "10", lambda: self.train_episode(10), **self.BUTTON_KWARGS)
+                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "10 Episodes", lambda: self.train_episode(10), **self.BUTTON_KWARGS)
         self.hundred_episode_button = Button(self.ten_episode_button.x + self.ten_episode_button.width  + self.PADDING,
-                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "100", lambda: self.train_episode(100), **self.BUTTON_KWARGS)
+                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "100 Episodes", lambda: self.train_episode(100), **self.BUTTON_KWARGS)
 
-        self.step_display = VariableDisplay(self.hundred_episode_button.x + self.hundred_episode_button.width + self.PADDING, 
-                                            0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Step", 
-                                            lambda: "X", **self.BUTTON_KWARGS)
-        self.one_step_button = Button(self.step_display.x + self.step_display.width  + self.PADDING,
-                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "1", lambda: self.train_step(1), **self.BUTTON_KWARGS)
+        
+        self.one_step_button = Button(self.hundred_episode_button.x + self.hundred_episode_button.width  + self.PADDING,
+                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "1 Step", lambda: self.train_step(1), **self.BUTTON_KWARGS)
         self.ten_step_button = Button(self.one_step_button.x + self.one_step_button.width  + self.PADDING,
-                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "10", lambda: self.train_step(10), **self.BUTTON_KWARGS)
+                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "10 Steps", lambda: self.train_step(10), **self.BUTTON_KWARGS)
         self.hundred_step_button = Button(self.ten_step_button.x + self.ten_step_button.width  + self.PADDING,
-                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "100", lambda: self.train_step(100), **self.BUTTON_KWARGS)
+                                        0, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "100 Steps", lambda: self.train_step(100), **self.BUTTON_KWARGS)
         self.reset_button = Button(self.hundred_step_button.x + self.hundred_step_button.width  + self.PADDING,
                                         self.hundred_step_button.y, self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Reset", 
                                         self.reset_button_function, **self.BUTTON_KWARGS)                                        
     
 
-        self.learning_rate_display = VariableDisplay(0, self.episode_display.height + self.PADDING, self.BUTTON_WIDTH, self.BUTTON_HEIGHT,
+        self.learning_rate_display = VariableDisplay(0, self.start_button.height + self.PADDING, self.BUTTON_WIDTH, self.BUTTON_HEIGHT,
                                                 "Learning rate", lambda: self.agent_one.learning_rate, **self.BUTTON_KWARGS)
         self.epsilon_display = VariableDisplay(self.learning_rate_display.width + self.PADDING, self.learning_rate_display.y, 
                                                 self.BUTTON_WIDTH, self.BUTTON_HEIGHT, "Epsilon", lambda: self.agent_one.epsilon, 
@@ -763,7 +777,7 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         handle_radius = int(20 * width_ratio)
         bar_width = int(10 * width_ratio)
         self.pause_length_slider = Slider(self.steps_per_episode_plot.x + self.steps_per_episode_plot.width + (self.window.width - self.steps_per_episode_plot.x - self.steps_per_episode_plot.width) // 3 - slider_width // 2,
-                                        self.maze_visualizer.y, slider_width, item_height * 2 - 50, "Pause [ms]", 0, 250, bar_width, handle_radius, self.pause_slider_function,
+                                        self.maze_visualizer.y, slider_width, item_height * 2 - 50, "Pause [ms]", 1, 250, bar_width, handle_radius, self.pause_slider_function,
                                         handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
         self.k_slider = Slider(self.k_display.x, self.k_display.y + self.k_display.height, self.k_display.width, self.window.height - (self.k_display.y + self.k_display.height) - 50,
                                 "K", 0, 0.01, bar_width, handle_radius, lambda val: self.k_lider_function(self.agent_one, val),
@@ -817,8 +831,8 @@ class DynaQPlusMazeMultiAgentScene(Scene):
 
 
 
-        for object_ in (self.episode_display, self.one_episode_button, self.ten_episode_button, self.hundred_episode_button,
-                        self.step_display, self.one_step_button, self.ten_step_button, self.hundred_step_button, 
+        for object_ in (self.stop_button, self.one_episode_button, self.ten_episode_button, self.hundred_episode_button,
+                        self.start_button, self.one_step_button, self.ten_step_button, self.hundred_step_button, 
                         self.learning_rate_display, self.epsilon_display, self.discount_factor_display, self.pause_display, self.heatmap_overlay_button,
                         self.policy_overlay_agent_one_button, self.policy_overlay_agent_two_button, self.execute_policy_button, self.policy_overlay_agent_three_button, 
                         self.reset_button, self.k_display, self.k_slider,
