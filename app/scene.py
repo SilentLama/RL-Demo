@@ -621,23 +621,24 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         agent.planning_steps = round(planning_steps)
 
     def train_steps_agent_thread_function(self, n, agent):
-        agent.train_steps(n)
-        self.update_plots()
+        for _ in range(n):
+            agent.train_steps(1)
+            self.update_plots()
 
     def train_episode_agent_thread_function(self, n, agent):
         for _ in range(n):
             agent.train_episode()
             self.update_plots()
 
-    def update_plots(self):        
+    def update_plots(self):
         for agent, line in zip(self.agents, 
                         (self.agent_one_steps_per_episode_line, 
                         self.agent_two_steps_per_episode_line, 
                         self.agent_three_steps_per_episode_line)):
-            line.set_xdata([i for i in range(agent.episode)])
-            line.set_ydata(agent.steps_per_episode)
-        self.agent_one_steps_per_episode_line.axes.set_xlim(0, max([a.episode for a in self.agents]))
-        self.agent_one_steps_per_episode_line.axes.set_ylim(0, self.max_steps_per_episode + 1)
+            line.set_xdata([i for i in range(agent.step)])
+            line.set_ydata(agent.cumulated_step_rewards)
+        self.agent_one_steps_per_episode_line.axes.set_xlim(0, max([a.step for a in self.agents]))
+        self.agent_one_steps_per_episode_line.axes.set_ylim(0, max([a.cumulated_step_rewards[-1] if len(a.cumulated_step_rewards) > 0 else 0 for a in self.agents]))
         
         self.steps_per_episode_plot.update_next_frame()
 
@@ -867,8 +868,8 @@ class DynaQPlusMazeMultiAgentScene(Scene):
         self.agent_one_steps_per_episode_line, = ax.plot([], [], color = rgb_to_mpl_colors(self.agent_one_visualizer.color))
         self.agent_two_steps_per_episode_line, = ax.plot([], [], color = rgb_to_mpl_colors(self.agent_two_visualizer.color))
         self.agent_three_steps_per_episode_line, = ax.plot([], [], color = rgb_to_mpl_colors(self.agent_three_visualizer.color))
-        ax.set_title("STEPS/EPISODE")
-        ax.set_xlabel("Episodes")
+        ax.set_title("Cumulated Rewards")
+        ax.set_xlabel("Steps")
         # ax.autoscale(enable=False, axis="both")
         ax.autoscale(enable=True, axis="both")
 
