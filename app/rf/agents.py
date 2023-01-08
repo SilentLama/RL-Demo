@@ -22,8 +22,11 @@ class DynaQAgent:
         self.planning_steps = planning_steps
         self.state = self.model.start_state
         self.visited_state_actions = np.full(self.value_function.shape, False)
+        self.step_rewards = []
+        self._cumulated_step_rewards = [0]
         self.episode_reward = 0
         self.episode_rewards = []
+        self._cumulated_episode_rewards = [0]
         self.episode_step = 0
         self.steps_per_episode = []
         self.episode = 0
@@ -35,12 +38,23 @@ class DynaQAgent:
         """Displays the reward at a given state"""
         return self.value_function.max(axis = 2) # return the max reward at that state (greedy action)
 
+    @property
+    def cumulated_episode_rewards(self):
+        return self._cumulated_rewards[1:]
+
+    @property
+    def cumulated_step_rewards(self):
+        return self._cumulated_step_rewards[1:]
+
     def reset(self):
         self.state = self.model.start_state
         self.value_function = self.model.get_blank_value_function()
         self.visited_state_actions[:] = False
+        self.step_rewards.clear()
+        self._cumulated_step_rewards = [0]
         self.episode_reward = 0
         self.episode_rewards.clear()
+        self._cumulated_episode_rewards = [0]
         self.episode_step = 0
         self.steps_per_episode.clear()
         self.episode = 0
@@ -70,6 +84,8 @@ class DynaQAgent:
     def train_steps(self, n):
         for _ in range(n):
             self.state, reward = self.train()
+            self.step_rewards.append(reward)
+            self._cumulated_step_rewards.append(self._cumulated_step_rewards[-1] + reward)
             self.episode_reward += reward
             self.step += 1
             self.episode_step += 1
@@ -77,6 +93,7 @@ class DynaQAgent:
                 self.state = self.model.start_state
                 self.steps_per_episode.append(self.episode_step)
                 self.episode_rewards.append(self.episode_reward)
+                self._cumulated_episode_rewards.append(self._cumulated_episode_rewards[-1] + self.episode_reward)
                 self.episode += 1
                 self.episode_step = 0
                 self.episode_reward = 0
