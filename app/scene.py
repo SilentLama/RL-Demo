@@ -99,7 +99,7 @@ class DynaQMazeScene(Scene):
 
         self.maze = maze
         self.maze_model = MazeModel(self.maze)
-        self.agent = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
+        self.agent = DynaQAgent(self.maze, self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
         self.agent_visualizer = AgentVisualizer(self.agent)
 
         self.create_widgets()
@@ -353,9 +353,9 @@ class DynaQMazeMultiAgentScene(Scene):
 
         self.maze = maze
         self.maze_model = MazeModel(self.maze)
-        self.agent_one = DynaQAgent(self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
-        self.agent_two = DynaQAgent(self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
-        self.agent_three = DynaQAgent(self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
+        self.agent_one = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
+        self.agent_two = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)        
+        self.agent_three = DynaQAgent(self.maze, self.maze_model, self.learning_rate, self.discount_factor, self.epsilon, self.max_steps_per_episode, self.planning_steps)
         self.agent_one_visualizer = AgentVisualizer(self.agent_one)
         self.agent_two_visualizer = AgentVisualizer(self.agent_two, color = (255, 0, 255))
         self.agent_three_visualizer = AgentVisualizer(self.agent_three, color = (0, 0, 255))
