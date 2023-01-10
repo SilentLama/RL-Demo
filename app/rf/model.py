@@ -31,6 +31,14 @@ class MazeModel:
         reward, next_state = self.state_action_lookup_table[state, action]
         return reward, next_state
 
+    def get_predicted_neighbours(self, target_state):
+        """Returns the predicted state, actions that lead to the provided state"""
+        neighbours = []
+        for (state, action), (reward, next_state) in self.state_action_lookup_table.items():
+            if next_state == target_state:
+                neighbours.append((state, action))
+        return neighbours
+
 class DynaQPlusMazeModel(MazeModel):
     def __init__(self, maze: Maze):
         super().__init__(maze)

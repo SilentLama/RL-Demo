@@ -1,6 +1,8 @@
 import numpy as np
 from time import sleep
 
+from queue import PriorityQueue
+
 class AgentVisualizer:
     def __init__(self, agent, color = (255, 0, 0)):
         self.agent = agent
@@ -11,7 +13,7 @@ class AgentVisualizer:
         return self.agent.state
 
 class DynaQAgent:
-    def __init__(self, environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause = None):
+    def __init__(self, environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause = None, use_prioritized_sweeping = False):
         self.environment = environment
         self.model = model
         self.value_function = model.get_blank_value_function()
@@ -32,6 +34,8 @@ class DynaQAgent:
         self.episode = 0
         self.step = 0
         self.pause = pause
+        self._use_prioritized_sweeping = use_prioritized_sweeping
+        self._prioritized_sweep_queue = PriorityQueue()
 
     @property
     def state_reward_table(self):
@@ -46,6 +50,12 @@ class DynaQAgent:
     def cumulated_step_rewards(self):
         return self._cumulated_step_rewards[1:]
 
+    def normal_planning(self, planning_steps):
+        for _ in range(planning_steps):
+            state, action = self.get_random_visited_state_action()
+            reward, next_state = self.model.sample(state, action)
+            self.update_value_function(state, action, reward, next_state)
+
     def reset(self):
         self.state = self.model.start_state
         self.value_function = self.model.get_blank_value_function()
@@ -59,6 +69,7 @@ class DynaQAgent:
         self.steps_per_episode.clear()
         self.episode = 0
         self.step = 0
+        self._prioritized_sweep_queue = PriorityQueue()
 
     def dyna(self, state, planning_steps, epsilon = 0.9):
         if np.random.uniform() > epsilon:
@@ -70,16 +81,30 @@ class DynaQAgent:
         self.visited_state_actions[state][action] = True
         
         self.update_value_function(state, action, reward, next_state)
+        value_update = abs(self.get_temporal_difference(state, action, reward, next_state))
         self.model.update(state, action, reward, next_state)
         # planning
-        for _ in range(planning_steps):
-            self._execute_planning_step()
+        if self._use_prioritized_sweeping:        
+            self.prioritized_sweeping(value_update, state, action, planning_steps)
+        else:
+            self.normal_planning(planning_steps)
         return next_state, reward
 
-    def _execute_planning_step(self):
-        state, action = self.get_random_visited_state_action()
-        sample_reward, sample_next_state = self.model.sample(state, action)
-        self.update_value_function(state, action, sample_reward, sample_next_state)
+    def prioritized_sweeping(self, value_update, state, action, planning_steps):
+        if value_update > 0:
+            self._prioritized_sweep_queue.put((-value_update, state, action)) # by default queue is a minheap so we use the negative value_update
+        for _ in range(planning_steps):
+            if self._prioritized_sweep_queue.empty():
+                break
+            _, state, action = self._prioritized_sweep_queue.get()            
+            reward, next_state = self.model.sample(state, action)
+            self.update_value_function(state, action, reward, next_state)
+            for p_state, p_action in self.model.get_predicted_neighbours(state):
+                predicted_reward, next_state = self.model.sample(p_state, p_action)
+                value_update = abs(self.get_temporal_difference(p_state, p_action, predicted_reward, next_state))
+                if value_update > 0:
+                    self._prioritized_sweep_queue.put((-value_update, p_state, p_action))
+            self._prioritized_sweep_queue.task_done()
 
     def train(self):
         return self.dyna(self.state, self.planning_steps, epsilon = self.epsilon)
@@ -166,15 +191,15 @@ class DynaQPlusAgent(DynaQAgent):
         self.update_value_function(state, action, reward, next_state)
         self.model.update(state, action, reward, next_state)
         # planning
-        for _ in range(planning_steps):
-            self._execute_planning_step()
+        self.normal_planning(planning_steps)
         return next_state, reward
 
-    def _execute_planning_step(self):
-        state, action = self.environment.get_random_state(), self.environment.get_random_action()
-        sample_reward, sample_next_state = self.model.sample(state, action)
-        sample_reward += self.k * np.sqrt(self.visited_state_actions_bonus_table[state][action])
-        self.update_value_function(state, action, sample_reward, sample_next_state)
+    def normal_planning(self, planning_steps):
+        for _ in range(planning_steps):
+            state, action = self.environment.get_random_state(), self.environment.get_random_action()
+            sample_reward, sample_next_state = self.model.sample(state, action)
+            sample_reward += self.k * np.sqrt(self.visited_state_actions_bonus_table[state][action])
+            self.update_value_function(state, action, sample_reward, sample_next_state)
 
     def reset(self):
         super().reset()
