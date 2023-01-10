@@ -45,7 +45,7 @@ class MazeVisualizer(GameObject):
         if self.mouse_down and mouse_up:
             # Mouse button was released, toggle the value of the cell under the mouse
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            i, j = (mouse_y - self.y) // self.cell_size, (mouse_x - self.x) // self.cell_size
+            i, j = int((mouse_y - self.y) // self.cell_size), int((mouse_x - self.x) // self.cell_size)
             if i >= 0 and i < self.data.shape[0] and j >= 0 and j < self.data.shape[1]:
                 self.data[i, j] = not self.data[i, j]
         self.mouse_down = pygame.mouse.get_pressed()[0] == 1
