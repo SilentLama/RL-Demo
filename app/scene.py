@@ -199,7 +199,7 @@ class DynaQMazeScene(Scene):
                                         self.maze_visualizer.y, slider_width, item_height * 2 - 50, "Pause [ms]", 0, 250, bar_width, handle_radius, self.pause_slider_function,
                                         handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
         self.plan_steps_slider = Slider(self.pause_length_slider.x + self.pause_length_slider.width + self.PADDING,
-                                        self.pause_length_slider.y, slider_width, item_height * 2 - 50, "Plan steps", 0, 100, bar_width, handle_radius, self.planning_steps_slider_function,
+                                        self.pause_length_slider.y, slider_width, item_height * 2 - 50, "Plan steps", 0, 100, bar_width, handle_radius, lambda plan_steps: self.planning_steps_slider_function(plan_steps, self.agent),
                                         handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
 
 
