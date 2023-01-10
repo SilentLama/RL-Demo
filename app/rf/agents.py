@@ -73,10 +73,13 @@ class DynaQAgent:
         self.model.update(state, action, reward, next_state)
         # planning
         for _ in range(planning_steps):
-            state, action = self.get_random_visited_state_action()
-            sample_reward, sample_next_state = self.model.sample(state, action)
-            self.update_value_function(state, action, sample_reward, sample_next_state)
+            self._execute_planning_step()
         return next_state, reward
+
+    def _execute_planning_step(self):
+        state, action = self.get_random_visited_state_action()
+        sample_reward, sample_next_state = self.model.sample(state, action)
+        self.update_value_function(state, action, sample_reward, sample_next_state)
 
     def train(self):
         return self.dyna(self.state, self.planning_steps, epsilon = self.epsilon)
@@ -164,11 +167,14 @@ class DynaQPlusAgent(DynaQAgent):
         self.model.update(state, action, reward, next_state)
         # planning
         for _ in range(planning_steps):
-            state, action = self.environment.get_random_state(), self.environment.get_random_action()
-            sample_reward, sample_next_state = self.model.sample(state, action)
-            sample_reward += self.k * np.sqrt(self.visited_state_actions_bonus_table[state][action])
-            self.update_value_function(state, action, sample_reward, sample_next_state)
+            self._execute_planning_step()
         return next_state, reward
+
+    def _execute_planning_step(self):
+        state, action = self.environment.get_random_state(), self.environment.get_random_action()
+        sample_reward, sample_next_state = self.model.sample(state, action)
+        sample_reward += self.k * np.sqrt(self.visited_state_actions_bonus_table[state][action])
+        self.update_value_function(state, action, sample_reward, sample_next_state)
 
     def reset(self):
         super().reset()
