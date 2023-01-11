@@ -110,6 +110,22 @@ class MazeGenerator:
         return maze
 
     @staticmethod
+    def _generate_binary_tree(rows, cols):
+        maze = np.full((rows, cols), False)
+        maze[0,:] = True
+        maze[:,0] = True
+        for i in range(0, rows, 2):
+            for j in range(0, cols, 2):
+                maze[i, j] = True
+                if i == 0 or j == 0:
+                    continue
+                if np.random.rand() > 0.5:
+                    maze[i - 1, j] = True
+                else:
+                    maze[i, j - 1] = True  
+        return maze
+
+    @staticmethod
     def generate_rewards(maze_paths, goal_state, base_reward = 0, goal_reward = 1):
         rewards = np.full(maze_paths.shape, base_reward)
         rewards[goal_state] = goal_reward
@@ -117,7 +133,7 @@ class MazeGenerator:
         
     
     @staticmethod
-    def generate_start_and_goal(maze_paths, selection_chance = 1):
+    def generate_start_and_goal(maze_paths, selection_chance = 1, start_corner = None, end_corner = None):
         y_max, x_max = maze_paths.shape[0] - 1, maze_paths.shape[1] - 1
 
         def search_path(*cell_stack):
@@ -130,21 +146,25 @@ class MazeGenerator:
             return search_path(*cell_stack, *stack)
 
         corners = ((0, 0), (y_max, 0), (0, x_max), (y_max, x_max))
-        start_corner = corners[np.random.randint(0, len(corners))]
-        end_corner = corners[np.random.randint(0, len(corners))]
+        start_corner = start_corner if start_corner is not None else corners[np.random.randint(0, len(corners))]
+        end_corner = end_corner if end_corner is not None else corners[np.random.randint(0, len(corners))]
         while end_corner == start_corner:
             end_corner = corners[np.random.randint(0, len(corners))]
         return search_path(start_corner), search_path(end_corner)
 
     @staticmethod
     def generate(rows, cols, algorithm = "prims", border_walls = False, base_reward = 0, goal_reward = 1):
-        if not border_walls:
+        start_corner = end_corner = None
+        if not border_walls and algorithm in ("prims",):
             rows, cols = rows + 1, cols + 1
         if algorithm.lower() == "prims":
             maze_paths = MazeGenerator._generate_prims(rows, cols)
+        elif algorithm.lower() == "binary_tree":
+            maze_paths = MazeGenerator._generate_binary_tree(rows, cols)
+            start_corner, end_corner = (0, 0), (rows - 1, cols - 1)
 
-        if not border_walls:
+        if not border_walls and algorithm in ("prims",):
             maze_paths = maze_paths[1:-1,1:-1]
-        start, goal = MazeGenerator.generate_start_and_goal(maze_paths)
+        start, goal = MazeGenerator.generate_start_and_goal(maze_paths, start_corner = start_corner, end_corner = end_corner)
         rewards = MazeGenerator.generate_rewards(maze_paths, goal, base_reward = base_reward, goal_reward = goal_reward)
         return Maze(maze_paths, rewards, start) 
