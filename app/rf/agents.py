@@ -13,7 +13,7 @@ class AgentVisualizer:
         return self.agent.state
 
 class DynaQAgent:
-    def __init__(self, environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause = None, use_prioritized_sweeping = False):
+    def __init__(self, environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause = None, use_prioritized_sweeping = False, theta = 0.0001):
         self.environment = environment
         self.model = model
         self.value_function = model.get_blank_value_function()
@@ -35,6 +35,7 @@ class DynaQAgent:
         self.step = 0
         self.pause = pause
         self._use_prioritized_sweeping = use_prioritized_sweeping
+        self.theta = theta
         self._prioritized_sweep_queue = PriorityQueue()
 
     @property
@@ -80,18 +81,21 @@ class DynaQAgent:
         reward, next_state = self.environment.execute_action(state, action)
         self.visited_state_actions[state][action] = True
         
-        self.update_value_function(state, action, reward, next_state)
-        value_update = abs(self.get_temporal_difference(state, action, reward, next_state))
+        self.update_value_function(state, action, reward, next_state)        
         self.model.update(state, action, reward, next_state)
         # planning
-        if self._use_prioritized_sweeping:        
+        if self._use_prioritized_sweeping:
+            value_update = abs(self.get_temporal_difference(state, action, reward, next_state))
+            # If we added a potential step to our policy we want to advance on this
+            if value_update > 0 and value_update * self.learning_rate - self.value_function[state][action] == 0:
+                value_update = 1
             self.prioritized_sweeping(value_update, state, action, planning_steps)
         else:
             self.normal_planning(planning_steps)
         return next_state, reward
 
     def prioritized_sweeping(self, value_update, state, action, planning_steps):
-        if value_update > 0:
+        if value_update > self.theta:
             self._prioritized_sweep_queue.put((-value_update, state, action)) # by default queue is a minheap so we use the negative value_update
         for _ in range(planning_steps):
             if self._prioritized_sweep_queue.empty():
@@ -100,9 +104,9 @@ class DynaQAgent:
             reward, next_state = self.model.sample(state, action)
             self.update_value_function(state, action, reward, next_state)
             for p_state, p_action in self.model.get_predicted_neighbours(state):
-                predicted_reward, next_state = self.model.sample(p_state, p_action)
-                value_update = abs(self.get_temporal_difference(p_state, p_action, predicted_reward, next_state))
-                if value_update > 0:
+                predicted_reward, _ = self.model.sample(p_state, p_action)
+                value_update = abs(self.get_temporal_difference(p_state, p_action, predicted_reward, state))
+                if value_update > self.theta:
                     self._prioritized_sweep_queue.put((-value_update, p_state, p_action))
             self._prioritized_sweep_queue.task_done()
 
