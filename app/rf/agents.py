@@ -86,9 +86,6 @@ class DynaQAgent:
         # planning
         if self._use_prioritized_sweeping:
             value_update = abs(self.get_temporal_difference(state, action, reward, next_state))
-            # If we added a potential step to our policy we want to advance on this
-            if value_update > 0 and value_update * self.learning_rate - self.value_function[state][action] == 0:
-                value_update = 1
             self.prioritized_sweeping(value_update, state, action, planning_steps)
         else:
             self.normal_planning(planning_steps)
