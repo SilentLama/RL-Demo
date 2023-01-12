@@ -126,6 +126,38 @@ class MazeGenerator:
         return maze
 
     @staticmethod
+    def _generate_dfs(rows, cols):
+        maze = np.full((rows, cols), False)
+        stack = []
+        start = (np.random.choice(rows), np.random.choice(cols))
+        stack.append(start)
+        def get_neighbours(cell):
+            row, col = cell
+            offsets = ((-2, 0), (0, -2), (2, 0), (0, 2))
+            return [(max(0, min(row + row_offset, rows - 1)), max(0, min(col + col_offset, cols - 1))) for (row_offset, col_offset) in offsets]
+
+        def connect_neighbours(cell):
+            row, col = cell
+            offsets = ((-1, 0), (0, -1), (1, 0), (0, 1))
+            for row_offset, col_offset in offsets:
+                maze[max(0, min(row + row_offset, rows - 1)), max(0, min(col + col_offset, cols - 1))] = True
+
+        while stack:
+            cell = stack.pop()
+            if maze[cell]:
+                continue
+            maze[cell] = True
+            row, col = cell
+            # connect all neighbours
+            neighbours = get_neighbours(cell)
+            connect_neighbours(cell)
+            neighbour_order = np.arange(len(neighbours))
+            np.random.shuffle(neighbour_order)
+            for idx in neighbour_order:
+                stack.append(neighbours[idx])
+        return maze
+
+    @staticmethod
     def generate_rewards(maze_paths, goal_state, base_reward = 0, goal_reward = 1):
         rewards = np.full(maze_paths.shape, base_reward)
         rewards[goal_state] = goal_reward
@@ -162,6 +194,8 @@ class MazeGenerator:
         elif algorithm.lower() == "binary_tree":
             maze_paths = MazeGenerator._generate_binary_tree(rows, cols)
             start_corner, end_corner = (0, 0), (rows - 1, cols - 1)
+        elif algorithm.lower() == "dfs":
+            maze_paths = MazeGenerator._generate_dfs(rows, cols)
 
         if not border_walls and algorithm in ("prims",):
             maze_paths = maze_paths[1:-1,1:-1]
