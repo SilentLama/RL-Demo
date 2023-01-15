@@ -5,6 +5,7 @@ import pygame
 from .game_object import GameObject
 from ..enums import RenderLayer
 
+
 import matplotlib
 def change_backend(backend = "agg"):
     matplotlib.use(backend)
@@ -12,7 +13,7 @@ def change_backend(backend = "agg"):
 change_backend()
 
 class MatplotlibPlotDisplay(GameObject):
-    def __init__(self, x, y, figure, width, height, layer=RenderLayer.GAME):
+    def __init__(self, x, y, figure, width, height, figure_dpi = 300, layer=RenderLayer.GAME):
         """A matplotlib plot display that can be rendered on the screen.
 
         The matplotlib plot display is rendered using the `x` and `y` coordinates, and has a `width` and `height` that determines the size of the display. It uses a `figure` object from matplotlib to render the plot. The matplotlib plot display is rendered on the `UI` layer by default, but this can be changed using the `layer` parameter.
@@ -28,6 +29,7 @@ class MatplotlibPlotDisplay(GameObject):
         self.figure = figure
         self.width = width
         self.height = height
+        self.figure.set_dpi(figure_dpi)
         # Create a canvas to draw the figure on
         self.update_image()
         # self.update_semaphore = threading.Semaphore(1)
