@@ -40,3 +40,11 @@ class ObstacleEnvironmentVisualizer(GameObject):
                         self.y + (actor_y * self.height_ratio) - length_y * np.sin(actor.rotation))
             pygame.draw.line(screen, actor.color, actor_start, actor_end, actor.line_thickness)
 
+        for goal_state in self.obstacle_environment.goal_states:
+            goal_y, goal_x, rotation = goal_state # this is the center
+            rotation = rotation * (np.pi / 180)
+            goal_start = (self.x + goal_x * self.width_ratio + (length_x / 2) * np.cos(rotation), 
+                            self.y + goal_y * self.height_ratio + (length_y / 2) * np.sin(rotation))
+            goal_end = (self.x + (goal_x * self.width_ratio) - length_x / 2 * np.cos(rotation), 
+                        self.y + (goal_y * self.height_ratio) - length_y * np.sin(rotation))
+            pygame.draw.line(screen, (0, 255, 255), goal_start, goal_end, max([a.line_thickness for a in self.actors]))

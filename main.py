@@ -4,6 +4,7 @@ from app.rf.obstacle_course import ObstacleEnvironment, Obstacle
 from app.rf.model import MazeModel, DynaQPlusMazeModel, Model
 from app.rf.agents import DynaQAgent, AgentVisualizer, DynaQPlusAgent, ObstacleEnvironmentAgent
 from threading import Thread
+from tqdm import trange
 
 if __name__ == "__main__":
     # DynaQMazeScene(1920, 1080, "DynaQ-Demo", Maze.load_from_numpy_array("./mazes/first_example_maze_positive_reward.npy", (2, 0))).run()
@@ -35,20 +36,23 @@ if __name__ == "__main__":
     # print(agent_one.step, agent_two.step, agent_three.step)
     # MixedAgentsScene(1920, 1080, "DynaQ+-Multi-Agent-Demo", maze, (agent_one, agent_two, agent_three)).run()
 
-
-    obstacle_environment = ObstacleEnvironment(20, 20, [Obstacle(2, 2, 3, 3)], (5, 5, 0), [(15, 15, 50)])
+    obstacles = [Obstacle(1, 1, 2, 2), Obstacle(10, 4, 5, 3), Obstacle(2, 6, 2, 2), Obstacle(17, 17, 2, 2), Obstacle(4, 14, 1, 5)]
+    obstacle_environment = ObstacleEnvironment(20, 20, obstacles, (12, 3, 80), [(5, 16, 100)])
     model = Model(obstacle_environment) # just there for compatibility
     learning_rate = 0.1
     epsilon = 0.9
-    discount_factor = 0.985
-    planning_steps = 0
-    max_steps_per_episode = 1000
+    discount_factor = 0.99
+    planning_steps = 5
+    max_steps_per_episode = 10000
     pause = None
     agent_one = ObstacleEnvironmentAgent(obstacle_environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, 5, pause = pause)        
     agent_two = ObstacleEnvironmentAgent(obstacle_environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, 5, pause = pause, use_prioritized_sweeping=True, theta=0.000001)        
     train_threads = []
+    def train(agent, n):
+        for _ in range(n):
+            agent.train_episode()
     for agent in (agent_one, agent_two):
-        t = Thread(target = agent.train_episode, args = [], daemon=True)
+        t = Thread(target = train, args = [agent, 10], daemon=True)
         train_threads.append(t)
         t.start()
     for thread in train_threads:
