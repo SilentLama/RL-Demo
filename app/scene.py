@@ -1225,7 +1225,6 @@ class ObstacleCourseScene(Scene):
         self.pause = None # ms
 
         self.environment = environment
-        self.maze_model = MazeModel(self.maze) # just there for compatibility
         self.agent_one, self.agent_two = agents
         self.agent_one_visualizer = ObstacleCourseAgentVisualizer(self.agent_one)
         self.agent_two_visualizer = ObstacleCourseAgentVisualizer(self.agent_two, color = (255, 0, 255))
@@ -1297,15 +1296,15 @@ class ObstacleCourseScene(Scene):
         item_height = (self.window.height - (self.BUTTON_HEIGHT + self.PADDING) * 2) 
         
         self.obstacle_course_visualizer = ObstacleEnvironmentVisualizer(0, self.reset_button.y + self.reset_button.height + self.PADDING,
-                                                                        item_width, item_height, [], (self.agent_one_visualizer, self.agent_two_visualizer))
+                                                                        item_width, item_height, self.environment, (self.agent_one_visualizer, self.agent_two_visualizer))
 
         
 
         handle_radius = int(20 * width_ratio)
         bar_width = int(10 * width_ratio)
         slider_width = 100
-        self.pause_length_slider = Slider(self.maze_visualizer.x + self.maze_visualizer.width + (self.window.width - self.maze_visualizer.x - self.maze_visualizer.width) // 3 - slider_width // 2,
-                                        self.maze_visualizer.y, slider_width, item_height - 50, "Pause [ms]", 0, 250, bar_width, handle_radius, self.pause_slider_function,
+        self.pause_length_slider = Slider(self.obstacle_course_visualizer.x + self.obstacle_course_visualizer.width + (self.window.width - self.obstacle_course_visualizer.x - self.obstacle_course_visualizer.width) // 3 - slider_width // 2,
+                                        self.obstacle_course_visualizer.y, slider_width, item_height - 50, "Pause [ms]", 0, 250, bar_width, handle_radius, self.pause_slider_function,
                                         handle_color=(255, 128, 128), bar_color=(128, 64, 64), label_color=(255, 128, 128), font_size=self.FONT_SIZE)
 
         fps_display = FPSDisplay(self.window.width - self.BUTTON_WIDTH // 2, 0, self.BUTTON_WIDTH // 2, self.BUTTON_HEIGHT // 2, self.window, font_size=self.FONT_SIZE // 2)
@@ -1317,7 +1316,7 @@ class ObstacleCourseScene(Scene):
                         self.reset_button, self.steps_display, self.table_display_button, self.heatmap_display_button,
                          
 
-                        self.pause_length_slider,
+                        self.obstacle_course_visualizer, self.pause_length_slider,
 
                         fps_display):
             self.window.add_game_object(object_)

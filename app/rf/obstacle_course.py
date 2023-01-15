@@ -5,28 +5,29 @@ class Obstacle:
     def __init__(self, x, y, widht, height) -> None:
         self.x = x
         self.y = y
-        self.width = widht
-        self.height = height
+        self.cols = widht
+        self.rows = height
         
 
 
 class ObstacleEnvironment:
-    ROTATION = 15 # possible rotation in degrees
+    ROTATION = 10 # possible rotation in degrees
 
-    def __init__(self, width, height, obstacles, start, goal_states) -> None:
-        self.width = width # discrete steps in x dimension
-        self.height = height # discrete steps in y dimension
+    def __init__(self, rows, cols, obstacles, start, goal_states) -> None:
+        self.rows = rows # discrete steps in y dimension
+        self.cols = cols # discrete steps in x dimension
+        
         self.obstacles = obstacles # list of Obstacle objects
-        self.environment = np.full((height, width), True)
+        self.environment = np.full((rows, cols), True)
         self.environment_mask = np.full(self.environment.shape, False)
         self.apply_obstacles()
         self.start = start
-        goal_states = goal_states # state = (x, y, rotation)
+        self.goal_states = goal_states # state = (x, y, rotation)
         self.action_map = ((-1, 0, 0), (0, 1, 0), (1, 0, 0), (0, -1, 0),
                             (-1, 0, 1), (0, 1, 1), (1, 0, 1), (0, -1, 1),
                             (-1, 0, 1), (0, 1, 1), (1, 0, 1), (0, -1, -1),
                             (0, 0, -1), (0, 0, 1)) 
-        self.rewards = np.zeros((width, height, len(self.action_map) - 1))
+        self.rewards = np.zeros((cols, rows, 365))
 
     def apply_obstacles(self):
         # modify the environment to take the obstacles into account
@@ -36,7 +37,7 @@ class ObstacleEnvironment:
 
     def get_blank_value_function(self):
         rows, cols = self.environment.shape
-        return np.zeros((rows, cols, len(self.action_map)))
+        return np.zeros((rows, cols, 365, len(self.action_map) - 1))
 
     @property
     def shape(self):
@@ -47,9 +48,9 @@ class ObstacleEnvironment:
         """
         s_x, s_y, s_rotation = state
         a_x, a_y, a_rotation = self.action_map[action]
-        next_state = (max(0, min(s_x + a_x, self.height - 1)), 
-                    max(0, min(s_y + a_y, self.width - 1)), 
-                    max(0, min(s_rotation + a_rotation * self.ROTATION, 365)))
+        next_state = (max(0, min(s_x + a_x, self.rows - 1)), 
+                    max(0, min(s_y + a_y, self.cols - 1)), 
+                    (s_rotation + a_rotation * self.ROTATION) % 365)
         if not self.is_valid_state(next_state, length):
             next_state = state
         return self.rewards[next_state], next_state
@@ -70,13 +71,15 @@ class ObstacleEnvironment:
         # calculate left edge
         rotation = self.degree_to_radian(rotation)
         for r in np.arange(1, length / 2, 0.1):
-            px = x + r * np.cos(rotation)
-            py = y + r * np.sin(rotation)
-            self.environment_mask[round(py), round(px)] = True
-            px = x - r * np.cos(rotation)
-            py = y - r * np.sin(rotation)
-            self.environment_mask[round(py), round(px)] = True
-        return np.any(self.environment_mask & ~self.environment) # check for overlaps with colliders
+            px = round(x + r * np.cos(rotation))
+            py = round(y + r * np.sin(rotation))
+            if 0 <= px < self.environment_mask.shape[1] and 0 <= py < self.environment_mask.shape[1]:
+                self.environment_mask[py, px] = True
+            px = round(x - r * np.cos(rotation))
+            py = round(y - r * np.sin(rotation))
+            if 0 <= px < self.environment_mask.shape[1] and 0 <= py < self.environment_mask.shape[1]:
+                self.environment_mask[py, px] = True
+        return not np.any(self.environment_mask & ~self.environment) # check for overlaps with colliders
 
     @staticmethod
     def degree_to_radian(degree):

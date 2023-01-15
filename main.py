@@ -36,13 +36,13 @@ if __name__ == "__main__":
     # MixedAgentsScene(1920, 1080, "DynaQ+-Multi-Agent-Demo", maze, (agent_one, agent_two, agent_three)).run()
 
 
-    obstacle_environment = ObstacleEnvironment(100, 100, [], (8, 8, 0), [])
+    obstacle_environment = ObstacleEnvironment(20, 20, [], (5, 5, 0), [(15, 15, 50)])
     model = Model(obstacle_environment) # just there for compatibility
     learning_rate = 0.1
     epsilon = 0.9
     discount_factor = 0.985
     planning_steps = 0
-    max_steps_per_episode = 1000000
+    max_steps_per_episode = 1000
     pause = None
     agent_one = ObstacleEnvironmentAgent(obstacle_environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, 5, pause = pause)        
     agent_two = ObstacleEnvironmentAgent(obstacle_environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, 5, pause = pause, use_prioritized_sweeping=True, theta=0.000001)        

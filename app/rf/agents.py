@@ -27,6 +27,10 @@ class ObstacleCourseAgentVisualizer:
         _, _, rotation = self.agent.state
         return rotation
 
+    @property
+    def length(self):
+        return self.agent.length
+
 class DynaQAgent:
     def __init__(self, environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause = None, use_prioritized_sweeping = False, theta = 0.0001):
         self.environment = environment
@@ -134,7 +138,7 @@ class DynaQAgent:
             self.step += 1
             self.episode_step += 1
             if self.environment.is_terminal_state(self.state) or self.episode_step >= self.max_steps_per_episode:
-                self.state = self.model.start_state
+                self.state = self.environment.start
                 self.steps_per_episode.append(self.episode_step)
                 self.episode_rewards.append(self.episode_reward)
                 self._cumulated_episode_rewards.append(self._cumulated_episode_rewards[-1] + self.episode_reward)
@@ -174,15 +178,16 @@ class DynaQAgent:
         return np.random.choice(np.where(self.value_function[state] == self.value_function[state].max())[0])
 
     def get_random_action(self):
-        return np.random.choice(self.value_function.shape[2])
+        return np.random.choice(self.value_function.shape[-1]) # actions are always in the last dimension
 
     def generate_policy(self):
         return np.argmax(self.value_function, axis = 2)
 
     def get_random_visited_state_action(self):
-        rows, cols, actions = np.where(self.visited_state_actions)
-        state_idx = np.random.choice(len(rows))
-        return (rows[state_idx], cols[state_idx]), actions[state_idx]
+        valid_state_actions = np.where(self.visited_state_actions)
+        state_idx = np.random.choice(len(valid_state_actions[0]))
+        return tuple([dim[state_idx] for dim in valid_state_actions[:-1]]), valid_state_actions[-1][state_idx]
+        # return (rows[state_idx], cols[state_idx]), actions[state_idx]
 
 class DynaQPlusAgent(DynaQAgent):
     def __init__(self, environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause=None, k = 0.001):
