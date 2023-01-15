@@ -7,7 +7,7 @@ from threading import Thread
 if __name__ == "__main__":
     # DynaQMazeScene(1920, 1080, "DynaQ-Demo", Maze.load_from_numpy_array("./mazes/first_example_maze_positive_reward.npy", (2, 0))).run()
     # DynaQMazeScene(1920, 1080, "DynaQ-Demo", MazeGenerator.generate(80, 100, goal_reward=1)).run()
-    # DynaQMazeMultiAgentScene(1920, 1080, "DynaQ-Multi-Agent-Demo", MazeGenerator.generate(20, 40, algorithm="binary_tree", goal_reward=1)).run()    
+    # DynaQMazeMultiAgentScene(1920, 1080, "DynaQ-Multi-Agent-Demo", Maze.load_from_numpy_array("./mazes/blocking_maze_example.npy", (5, 3))).run()    
     # DynaQPlusMazeMultiAgentScene(1920, 1080, "DynaQ+-Multi-Agent-Demo", Maze.load_from_numpy_array("./mazes/blocking_maze_example.npy", (5, 3))).run()
 
 
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     dynaq_plus_maze_model = DynaQPlusMazeModel(maze)
     learning_rate = 0.1
     epsilon = 0.9
-    discount_factor = 0.95
+    discount_factor = 0.99
     planning_steps = 0
     max_steps_per_episode = 1000000
     pause = None
