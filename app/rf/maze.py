@@ -22,6 +22,10 @@ class Maze:
         paths, rewards = np.load(file)
         return cls(paths, rewards, start)
 
+    def get_blank_value_function(self):
+        rows, cols = self.paths.shape
+        return np.zeros((rows, cols, len(self.action_map)))
+
     def from_json(self):
         pass
 

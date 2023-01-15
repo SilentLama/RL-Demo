@@ -8,4 +8,5 @@ from .matplotlib_visualizer import MatplotlibPlotDisplay
 from .maze_policy_visualizer import MazePolicyVisualizer
 from .variable_display import VariableDisplay
 from .slider import Slider
+from .obstacle_environment_visualizer import ObstacleEnvironmentVisualizer
 from .game_object import GameObject

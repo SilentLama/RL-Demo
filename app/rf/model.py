@@ -2,6 +2,22 @@ import numpy as np
 
 from .maze import Maze
 
+class Model:
+    def __init__(self, environment) -> None:
+        self._environment = environment
+        self.state_action_lookup_table = dict()
+
+    def reset(self):
+        self.state_action_lookup_table.clear()
+
+    def update(self, state, action, reward, next_state):
+        self.state_action_lookup_table[state, action] = reward, next_state
+
+    def sample(self, state, action):
+        """Sample a random state/action that has been visited before and return the experience"""
+        reward, next_state = self.state_action_lookup_table[state, action]
+        return reward, next_state
+
 class MazeModel:
     def __init__(self, maze: Maze):
         self._maze = maze

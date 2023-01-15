@@ -12,17 +12,32 @@ class AgentVisualizer:
     def coordinates(self):
         return self.agent.state
 
+class ObstacleCourseAgentVisualizer:
+    def __init__(self, agent, color = (255, 0, 0)):
+        self.agent = agent
+        self.color = color
+
+    @property
+    def coordinates(self):
+        y, x, _ = self.agent.state
+        return (y, x)
+
+    @property
+    def rotation(self):
+        _, _, rotation = self.agent.state
+        return rotation
+
 class DynaQAgent:
     def __init__(self, environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause = None, use_prioritized_sweeping = False, theta = 0.0001):
         self.environment = environment
         self.model = model
-        self.value_function = model.get_blank_value_function()
+        self.value_function = environment.get_blank_value_function()
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.epsilon = epsilon
         self.max_steps_per_episode = max_steps_per_episode
         self.planning_steps = planning_steps
-        self.state = self.model.start_state
+        self.state = self.environment.start
         self.visited_state_actions = np.full(self.value_function.shape, False)
         self.step_rewards = []
         self._cumulated_step_rewards = [0]
@@ -208,3 +223,27 @@ class DynaQPlusAgent(DynaQAgent):
 
     def train(self):
         return self.dyna_plus(self.state, self.planning_steps, epsilon = self.epsilon)
+
+class ObstacleEnvironmentAgent(DynaQAgent):
+    def __init__(self, environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, length, pause=None, use_prioritized_sweeping=False, theta=0.0001):
+        super().__init__(environment, model, learning_rate, discount_factor, epsilon, max_steps_per_episode, planning_steps, pause, use_prioritized_sweeping, theta)
+        self.length = length
+
+    def dyna(self, state, planning_steps, epsilon = 0.9):
+        if np.random.uniform() > epsilon:
+            action = self.get_random_action()
+        else:
+            action = self.get_greedy_action(state)
+
+        reward, next_state = self.environment.execute_action(state, action, self.length)
+        self.visited_state_actions[state][action] = True
+        
+        self.update_value_function(state, action, reward, next_state)        
+        self.model.update(state, action, reward, next_state)
+        # planning
+        if self._use_prioritized_sweeping:
+            value_update = abs(self.get_temporal_difference(state, action, reward, next_state))
+            self.prioritized_sweeping(value_update, state, action, planning_steps)
+        else:
+            self.normal_planning(planning_steps)
+        return next_state, reward
