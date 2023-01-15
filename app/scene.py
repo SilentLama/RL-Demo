@@ -76,8 +76,8 @@ class DynaQMazeScene(Scene):
         self.steps_per_episode_line.set_xdata(X)
         self.steps_per_episode_line.set_ydata(self.agent.steps_per_episode)
         self.steps_per_episode_line.axes.set_xlim(0, self.agent.episode - 1)
-        self.steps_per_episode_line.axes.set_ylim(0, self.agent.max_steps_per_episode + 1)
-        
+        self.steps_per_episode_line.axes.set_ylim(0, max(self.agent.steps_per_episode) if len(self.agent.steps_per_episode) else 1)
+
         self.reward_per_episode_line.set_xdata(X)
         self.reward_per_episode_line.set_ydata(self.agent.episode_rewards)
         self.reward_per_episode_line.axes.set_xlim(0, self.agent.episode - 1)
@@ -336,7 +336,7 @@ class DynaQMazeMultiAgentScene(Scene):
             line.set_xdata([i for i in range(agent.episode)])
             line.set_ydata(agent.steps_per_episode)
         self.agent_one_steps_per_episode_line.axes.set_xlim(0, max([a.episode for a in self.agents]))
-        self.agent_one_steps_per_episode_line.axes.set_ylim(0, self.max_steps_per_episode + 1)
+        self.agent_one_steps_per_episode_line.axes.set_ylim(0, max([max(a.steps_per_episode) if len(a.steps_per_episode) else 0 for a in self.agents ]))
         
         self.steps_per_episode_plot.update_next_frame()
 
