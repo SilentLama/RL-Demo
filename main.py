@@ -1,6 +1,6 @@
 from app.scene import DynaQMazeScene, DynaQMazeMultiAgentScene, DynaQPlusMazeMultiAgentScene, MixedAgentsScene, ObstacleCourseScene
 from app.rf.maze import Maze, MazeGenerator
-from app.rf.obstacle_course import ObstacleEnvironment
+from app.rf.obstacle_course import ObstacleEnvironment, Obstacle
 from app.rf.model import MazeModel, DynaQPlusMazeModel, Model
 from app.rf.agents import DynaQAgent, AgentVisualizer, DynaQPlusAgent, ObstacleEnvironmentAgent
 from threading import Thread
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     # MixedAgentsScene(1920, 1080, "DynaQ+-Multi-Agent-Demo", maze, (agent_one, agent_two, agent_three)).run()
 
 
-    obstacle_environment = ObstacleEnvironment(20, 20, [], (5, 5, 0), [(15, 15, 50)])
+    obstacle_environment = ObstacleEnvironment(20, 20, [Obstacle(2, 2, 3, 3)], (5, 5, 0), [(15, 15, 50)])
     model = Model(obstacle_environment) # just there for compatibility
     learning_rate = 0.1
     epsilon = 0.9

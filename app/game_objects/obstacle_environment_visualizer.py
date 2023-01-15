@@ -24,8 +24,12 @@ class ObstacleEnvironmentVisualizer(GameObject):
     def draw(self, screen):
         pygame.draw.rect(screen, self.background_color, (self.x, self.y, self.width, self.height))
         for obstacle in self.obstacle_environment.obstacles:
-            obstacle_coordinates = [(x + self.x, y + self.y) for x, y in obstacle.coordinates]
-            pygame.draw.polygon(screen, obstacle.color, obstacle_coordinates)
+            obstacle_x, obstacle_y = obstacle.coordinates
+            top_left = (self.x + obstacle_x * self.width_ratio, self.y + obstacle_y * self.height_ratio)
+            top_right = top_left[0] + obstacle.width * self.width_ratio, top_left[1]
+            bottom_right = top_right[0], top_right[1] + obstacle.height * self.height_ratio
+            bottom_left = top_left[0], top_left[1] + obstacle.height * self.height_ratio
+            pygame.draw.polygon(screen, obstacle.color, [top_left, top_right, bottom_right, bottom_left])
 
         for actor, length_x, length_y in zip(self.actors, self.world_actor_lengths_x, self.world_actor_lengths_y):
             # actor_center = (actor.coordinates[0] + self.x, actor.coordinates[1] + self.y)

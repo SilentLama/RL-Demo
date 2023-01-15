@@ -2,11 +2,16 @@ import numpy as np
 
 
 class Obstacle:
-    def __init__(self, x, y, widht, height) -> None:
+    def __init__(self, x, y, width, height, color = (128, 128, 128)) -> None:
         self.x = x
         self.y = y
-        self.cols = widht
-        self.rows = height
+        self.width = width # cols
+        self.height = height # rows
+        self.color = color
+    
+    @property
+    def coordinates(self):
+        return (self.x, self.y)
         
 
 
@@ -33,7 +38,7 @@ class ObstacleEnvironment:
         # modify the environment to take the obstacles into account
         for obstacle in self.obstacles:
             # assume for now the obstacles are rectangles
-            self.environment[obstacle.y: obstacle.y + obstacle.height, obstacle.x: obstacle.x + obstacle.width]
+            self.environment[obstacle.y: obstacle.y + obstacle.height, obstacle.x: obstacle.x + obstacle.width] = False
 
     def get_blank_value_function(self):
         rows, cols = self.environment.shape
