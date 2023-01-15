@@ -13,20 +13,21 @@ class AgentVisualizer:
         return self.agent.state
 
 class ObstacleCourseAgentVisualizer:
-    def __init__(self, agent, color = (255, 0, 0)):
+    def __init__(self, agent, color = (255, 0, 0), line_thickness = 5):
         self.agent = agent
         self.color = color
+        self.line_thickness = line_thickness
 
     @property
     def coordinates(self):
         y, x, _ = self.agent.state
-        return (y, x)
+        return (x, y)
 
     @property
     def rotation(self):
         _, _, rotation = self.agent.state
-        return rotation
-
+        return rotation * (np.pi / 180) # convert to radian
+    
     @property
     def length(self):
         return self.agent.length

@@ -70,15 +70,24 @@ class ObstacleEnvironment:
         self.environment_mask[y, x] = True
         # calculate left edge
         rotation = self.degree_to_radian(rotation)
-        for r in np.arange(1, length / 2, 0.1):
-            px = round(x + r * np.cos(rotation))
-            py = round(y + r * np.sin(rotation))
-            if 0 <= px < self.environment_mask.shape[1] and 0 <= py < self.environment_mask.shape[1]:
-                self.environment_mask[py, px] = True
-            px = round(x - r * np.cos(rotation))
-            py = round(y - r * np.sin(rotation))
-            if 0 <= px < self.environment_mask.shape[1] and 0 <= py < self.environment_mask.shape[1]:
-                self.environment_mask[py, px] = True
+        length_samples = np.arange(1, length, 0.1)
+        px = np.round(x + length_samples * np.cos(rotation))
+        py = np.round(y + length_samples * np.sin(rotation))
+        if np.any(px < 0) or np.any(px > self.environment_mask.shape[1] - 1) or np.any(py < 0) or np.any(py > self.environment_mask.shape[0] - 1):
+            return False
+        
+        indices = np.stack((py, px), axis = 1).astype(int)
+        for row, col in indices:
+            self.environment_mask[row, col] = True
+
+        px = np.round(x - length_samples * np.cos(rotation))
+        py = np.round(y - length_samples * np.sin(rotation))
+        if np.any(px < 0) or np.any(px > self.environment_mask.shape[1] - 1) or np.any(py < 0) or np.any(py > self.environment_mask.shape[0] - 1):
+            return False
+        
+        indices = np.stack((py, px), axis = 1).astype(int)
+        for row, col in indices:
+            self.environment_mask[row, col] = True
         return not np.any(self.environment_mask & ~self.environment) # check for overlaps with colliders
 
     @staticmethod
